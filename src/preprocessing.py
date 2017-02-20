@@ -37,36 +37,33 @@ def create_random_matrix(L, D):
         for j in range(len(A[i])):
             A[i][j] /= norm
 
-    return A
+    return np.array(A, dtype=np.float64)
 
 
-class HiddenMarkovModelTrainerSubClass(HiddenMarkovModelTrainer):
-    def __init__(self, states=None, symbols=None):
-        HiddenMarkovModelTrainer.__init__(self, states=states, symbols=symbols)
+def transition_matrix(self):
+    trans_iter = (self._transitions[sj].prob(si)
+                  for sj in self._states
+                  for si in self._states)
 
-    def transition_matrix(self):
-        trans_iter = (self._transitions[sj].prob(si)
-                      for sj in self._states
-                      for si in self._states)
+    transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
+    N = len(self._states)
+    return transitions_prob.reshape((N, N)).T
 
-        transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
-        N = len(self._states)
-        return transitions_prob.reshape((N, N)).T
 
-    def observation_matrix(self):
-        trans_iter = (self._outputs[sj].prob(si)
-                      for sj in self._symbols
-                      for si in self._states)
+def observation_matrix(self):
+    trans_iter = (self._outputs[sj].prob(si)
+                  for sj in self._symbols
+                  for si in self._states)
 
-        transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
-        N = len(self._states)
-        M = len(self._symbols)
-        return transitions_prob.reshape((N, M)).T
+    transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
+    N = len(self._states)
+    M = len(self._symbols)
+    return transitions_prob.reshape((N, M)).T
 
 
 all_words, all_poems, all_lines = process_data('../project2data/shakespeare.txt')
 
-states = range(100)
+states = range(10)
 symbols = list(all_words)
 
 L = len(states)
@@ -86,7 +83,7 @@ training = []
 for line in all_poems:
     training.append([(i, None) for i in line])
 
-trainer = HiddenMarkovModelTrainerSubClass(states, symbols)
+trainer = HiddenMarkovModelTrainer(states, symbols)
 curr_time = time.time()
 hmm = trainer.train_unsupervised(training, model=model,
                                  max_iterations=1)
