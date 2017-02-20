@@ -1,5 +1,7 @@
 from nltk.tokenize import word_tokenize
-from nltk.tag.hmm import _create_hmm_tagger, HiddenMarkovModelTrainer
+from nltk.tag.hmm import HiddenMarkovModelTagger, HiddenMarkovModelTrainer
+from nltk.probability import (DictionaryConditionalProbDist,
+                              RandomProbDist)
 import numpy as np
 import random
 import networkx as nx
@@ -43,24 +45,24 @@ def create_random_matrix(L, D):
     return np.array(A, dtype=np.float64)
 
 
-def transition_matrix(self):
-    trans_iter = (self._transitions[sj].prob(si)
-                  for sj in self._states
-                  for si in self._states)
+def transition_matrix(hmm):
+    trans_iter = (hmm._transitions[sj].prob(si)
+                  for sj in hmm._states
+                  for si in hmm._states)
 
     transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
-    N = len(self._states)
+    N = len(hmm._states)
     return transitions_prob.reshape((N, N))
 
 
-def observation_matrix(self):
-    trans_iter = (self._outputs[sj].prob(si)
-                  for sj in self._symbols
-                  for si in self._states)
+def observation_matrix(hmm):
+    trans_iter = (hmm._outputs[sj].prob(si)
+                  for sj in hmm._states
+                  for si in hmm._symbols)
 
     transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
-    N = len(self._states)
-    M = len(self._symbols)
+    N = len(hmm._states)
+    M = len(hmm._symbols)
     return transitions_prob.reshape((N, M))
 
 
@@ -142,23 +144,33 @@ def load_obj(name):
 
 all_words, all_poems, all_lines = process_data('../project2data/shakespeare.txt')
 
-states = range(100)
+states = range(10)
 symbols = list(all_words)
 
 L = len(states)
 D = len(symbols)
 
 # Randomly initialize and normalize matrix A.
-A = create_random_matrix(L, L)
+# A = create_random_matrix(L, L)
 # visualize_transition_matrix_graph(A)
 
 # Randomly initialize and normalize matrix O.
-O = create_random_matrix(L, D)
+# O = create_random_matrix(L, D)
 # find_top_words_for_states(10, O, symbols)
 
-pi = [1. / L for _ in range(L)]
+# pi = [1. / L for _ in range(L)]
 
-model = _create_hmm_tagger(states, symbols, A, O, pi)
+priors = RandomProbDist(states)
+A = DictionaryConditionalProbDist(
+                dict((state, RandomProbDist(states))
+                     for state in states))
+O = DictionaryConditionalProbDist(
+                dict((state, RandomProbDist(symbols))
+                     for state in states))
+model = HiddenMarkovModelTagger(symbols, states,
+                                A, O, priors)
+
+# model = _create_hmm_tagger(states, symbols, A, O, pi)
 
 training = []
 for line in all_poems:
@@ -167,10 +179,10 @@ for line in all_poems:
 trainer = HiddenMarkovModelTrainer(states, symbols)
 curr_time = time.time()
 hmm = trainer.train_unsupervised(training, model=model,
-                                 max_iterations=1000)
+                                 max_iterations=1)
 print time.time() - curr_time
 
-top_10_words = find_top_words_for_states(10, O, symbols)
+top_10_words = find_top_words_for_states(10, observation_matrix(hmm), symbols)
 save_obj(top_10_words, 'top_10_words')
 save_obj(observation_matrix(hmm), 'observation_matrix')
 save_obj(transition_matrix(hmm), 'transition_matrix')
