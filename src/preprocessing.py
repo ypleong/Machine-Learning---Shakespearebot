@@ -5,6 +5,7 @@ import random
 import networkx as nx
 import time
 import matplotlib.pyplot as plt
+import pickle
 
 
 def process_data(filename):
@@ -129,6 +130,16 @@ def find_top_words_for_states(n, O, symbols):
 
     return top_words
 
+
+def save_obj(obj, name):
+    with open(name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_obj(name):
+    with open(name + '.pkl', 'rb') as f:
+        return pickle.load(f)
+
 all_words, all_poems, all_lines = process_data('../project2data/shakespeare.txt')
 
 states = range(100)
@@ -143,7 +154,7 @@ A = create_random_matrix(L, L)
 
 # Randomly initialize and normalize matrix O.
 O = create_random_matrix(L, D)
-find_top_words_for_states(10, O, symbols)
+# find_top_words_for_states(10, O, symbols)
 
 pi = [1. / L for _ in range(L)]
 
@@ -156,7 +167,11 @@ for line in all_poems:
 trainer = HiddenMarkovModelTrainer(states, symbols)
 curr_time = time.time()
 hmm = trainer.train_unsupervised(training, model=model,
-                                 max_iterations=1)
+                                 max_iterations=1000)
 print time.time() - curr_time
 
-plot_observation_bar(observation_matrix(hmm))
+top_10_words = find_top_words_for_states(10, O, symbols)
+save_obj(top_10_words, 'top_10_words')
+save_obj(observation_matrix(hmm), 'observation_matrix')
+save_obj(transition_matrix(hmm), 'transition_matrix')
+# plot_observation_bar(observation_matrix(hmm))
