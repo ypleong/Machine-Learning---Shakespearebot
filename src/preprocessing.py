@@ -1,9 +1,8 @@
 from nltk.tokenize import word_tokenize
-from nltk.tag.hmm import demo_bw, _create_hmm_tagger, HiddenMarkovModelTrainer
+from nltk.tag.hmm import _create_hmm_tagger, HiddenMarkovModelTrainer
 import numpy as np
 import random
 import time
-from hmmlearn.hmm import MultinomialHMM
 
 
 def process_data(filename):
@@ -40,6 +39,31 @@ def create_random_matrix(L, D):
 
     return A
 
+
+class HiddenMarkovModelTrainerSubClass(HiddenMarkovModelTrainer):
+    def __init__(self, states=None, symbols=None):
+        HiddenMarkovModelTrainer.__init__(self, states=states, symbols=symbols)
+
+    def transition_matrix(self):
+        trans_iter = (self._transitions[sj].prob(si)
+                      for sj in self._states
+                      for si in self._states)
+
+        transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
+        N = len(self._states)
+        return transitions_prob.reshape((N, N)).T
+
+    def observation_matrix(self):
+        trans_iter = (self._outputs[sj].prob(si)
+                      for sj in self._symbols
+                      for si in self._states)
+
+        transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
+        N = len(self._states)
+        M = len(self._symbols)
+        return transitions_prob.reshape((N, M)).T
+
+
 all_words, all_poems, all_lines = process_data('../project2data/shakespeare.txt')
 
 states = range(100)
@@ -65,7 +89,6 @@ for line in all_poems:
 trainer = HiddenMarkovModelTrainerSubClass(states, symbols)
 curr_time = time.time()
 hmm = trainer.train_unsupervised(training, model=model,
-                                 max_iterations=1000)
+                                 max_iterations=1)
 print time.time() - curr_time
 print hmm
-# demo_bw()
