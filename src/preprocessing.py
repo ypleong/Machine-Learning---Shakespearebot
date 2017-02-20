@@ -40,31 +40,6 @@ def create_random_matrix(L, D):
 
     return A
 
-
-class HiddenMarkovModelTrainerSubClass(HiddenMarkovModelTrainer):
-    def __init__(self, states=None, symbols=None):
-        HiddenMarkovModelTrainer.__init__(self, states=states, symbols=symbols)
-
-    def transition_matrix(self):
-        trans_iter = (self._transitions[sj].prob(si)
-                      for sj in self._states
-                      for si in self._states)
-
-        transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
-        N = len(self._states)
-        return transitions_prob.reshape((N, N)).T
-
-    def observation_matrix(self):
-        trans_iter = (self._outputs[sj].prob(si)
-                      for sj in self._symbols
-                      for si in self._states)
-
-        transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
-        N = len(self._states)
-        M = len(self._symbols)
-        return transitions_prob.reshape((N, M)).T
-
-
 all_words, all_poems, all_lines = process_data('../project2data/shakespeare.txt')
 
 states = range(100)
