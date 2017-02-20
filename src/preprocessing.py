@@ -2,17 +2,26 @@ from nltk.tokenize import word_tokenize
 from nltk.tag.hmm import demo_bw, _create_hmm_tagger, HiddenMarkovModelTrainer
 import numpy as np
 import random
+import time
 
 all_lines = []
 all_words = set()
+all_poems = []
+poem_temp = []
 with open('../project2data/shakespeare.txt') as f:
     for line in f.readlines():
         line_tokens = word_tokenize(line)
-        if len(line_tokens) > 1:
-            all_lines.append(line_tokens)
 
         if len(line_tokens) > 1:
             all_words.update(line_tokens)
+            all_lines.append(line_tokens)
+            poem_temp += line_tokens
+        elif len(line_tokens) == 1:
+            all_poems.append(poem_temp)
+            poem_temp = []
+
+    all_poems.append(poem_temp)
+    all_poems = all_poems[1:]
 
 states = range(100)
 symbols = list(all_words)
@@ -42,12 +51,13 @@ pi = [1. / L for _ in range(L)]
 model = _create_hmm_tagger(states, symbols, A, O, pi)
 
 training = []
-for line in all_lines:
+for line in all_poems:
     training.append([(i, None) for i in line])
 
 trainer = HiddenMarkovModelTrainer(states, symbols)
+curr_time = time.time()
 hmm = trainer.train_unsupervised(training, model=model,
                                  max_iterations=1000)
-
+print time.time() - curr_time
 print hmm
 # demo_bw()
