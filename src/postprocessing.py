@@ -1,7 +1,34 @@
+import random
 import pickle
 import networkx as nx
 import matplotlib.pyplot as plt
+from nltk.tokenize import word_tokenize
+from nltk.tag.hmm import HiddenMarkovModelTagger, HiddenMarkovModelTrainer, _create_hmm_tagger
+from nltk.probability import (DictionaryConditionalProbDist,RandomProbDist)
+#from nltk.tag.hmm import create_hmm_tagger 
 
+def process_data(filename):
+    all_lines = []
+    all_words = set()
+    all_poems = []
+    poem_temp = []
+    with open(filename) as f:
+        for line in f.readlines():
+            line_tokens = [word.lower() for word in word_tokenize(line)]
+            
+            if len(line_tokens) > 1:
+                all_words.update(line_tokens)
+                all_lines.append(line_tokens)
+                poem_temp += line_tokens
+            elif len(line_tokens) == 1:
+                all_poems.append(poem_temp)
+                poem_temp = []
+                
+    all_poems.append(poem_temp)
+    all_poems = all_poems[1:]
+    
+    return all_words, all_poems, all_lines
+                                                                                                            
 
 def load_obj(name):
     with open(name + '.pkl', 'rb') as f:
@@ -63,3 +90,19 @@ O = load_obj('observation_matrix')
 A = load_obj('transition_matrix')
 
 print top_10_words
+
+all_words, all_poems, all_lines = process_data('../project2data/shakespeare.txt')
+states = range(10)
+symbols = list(all_words)
+
+L = len(states)
+D = len(symbols)
+
+#priors = RandomProbDist(states)
+pi = [1. / L for _ in range(L)]
+#model = HiddenMarkovModelTagger(symbols, states, A, O, priors)
+model = _create_hmm_tagger(states, symbols, A, O, pi)
+
+seq = model.random_sample(random.Random(),7)
+
+print(seq)
