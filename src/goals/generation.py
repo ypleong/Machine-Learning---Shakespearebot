@@ -59,11 +59,10 @@ for k in range(L):
         state.append(k)
         break
 
-M=8
 prev_k = -1
 #Update each state and emission
 i = 0
-syllable_count = 0
+syllable_count = syllables_in_word(first_word)
 while syllable_count < 10:
     #Update each state based on previous state
     P_A = A[state[i]]
@@ -87,12 +86,12 @@ while syllable_count < 10:
                 if (syllable_count > 10):
                     state.pop()
                     syllable_count -= syllables_in_word(new_word)
+                    break
                 else:
                     rand_sequence.append(new_word)
                     prev_k = k
                     i = i + 1
                     break
-
 print(state)
 print(rand_sequence)
 
