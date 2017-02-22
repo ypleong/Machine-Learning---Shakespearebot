@@ -6,6 +6,8 @@ import numpy as np
 import random
 import time
 import pickle
+import operator
+import string
 
 
 def process_data(filename):
@@ -85,7 +87,123 @@ def save_obj(obj, name):
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
+def compute_bigram_count(all_lines):
+    bigram_list = {}
+    for line in all_lines:
+        for ind in range(len(line)-1):
+            if (line[ind], line[ind+1]) in bigram_list:
+                bigram_list[(line[ind], line[ind+1])] += 1
+            else:
+                bigram_list[(line[ind], line[ind + 1])] = 1
+
+    return sorted(bigram_list.items(), key=operator.itemgetter(1), reverse=True)
+
+
+def compute_rhythm_dictionary(all_lines):
+    all_rhythm = set()
+    poem = 0
+    begin = 0
+    stanza = 0
+    tot_line = 0
+    rhythm1 = []
+    rhythm2 = []
+
+    punctuations = list(string.punctuation)
+
+    for line in all_lines:
+
+        line = [item for item in line if item not in punctuations]
+
+        if poem == 98:
+            if stanza == 0:
+                rhythm1.append(line[-1])
+                tot_line += 1
+
+                if tot_line == 5:
+                    all_rhythm.update([tuple(sorted([rhythm1[0], rhythm1[2]])),
+                                      tuple(sorted([rhythm1[1], rhythm1[3]])),
+                                      tuple(sorted([rhythm1[2], rhythm1[4]]))])
+                    rhythm1 = []
+                    stanza += 1
+                    tot_line = 0
+
+            elif stanza < 3:
+                if begin == 0:
+                    rhythm1.append(line[-1])
+                    begin = 1
+                elif begin == 1:
+                    rhythm2.append(line[-1])
+                    begin = 0
+                tot_line += 1
+
+                if tot_line == 4:
+                    all_rhythm.update([tuple(sorted(rhythm1)), tuple(sorted(rhythm2))])
+                    tot_line = 0
+                    stanza += 1
+                    rhythm1 = []
+                    rhythm2 = []
+
+            else:
+                rhythm1.append(line[-1])
+                tot_line += 1
+
+                if tot_line == 2:
+                    tot_line = 0
+                    all_rhythm.add(tuple(sorted(rhythm1)))
+                    stanza = 0
+                    rhythm1 = []
+                    poem += 1
+
+        elif poem == 125:
+            rhythm1.append(line[-1])
+            tot_line += 1
+
+            if tot_line == 2:
+                tot_line = 0
+                all_rhythm.add(tuple(sorted(rhythm1)))
+                stanza += 1
+                rhythm1 = []
+
+            if stanza == 6:
+                poem += 1
+                stanza = 0
+
+        else:
+            if stanza < 3:
+                if begin == 0:
+                    rhythm1.append(line[-1])
+                    begin = 1
+                elif begin == 1:
+                    rhythm2.append(line[-1])
+                    begin = 0
+                tot_line += 1
+
+                if tot_line == 4:
+                    all_rhythm.update([tuple(sorted(rhythm1)), tuple(sorted(rhythm2))])
+                    tot_line = 0
+                    stanza += 1
+                    rhythm1 = []
+                    rhythm2 = []
+
+            else:
+                rhythm1.append(line[-1])
+                tot_line += 1
+
+                if tot_line == 2:
+                    tot_line = 0
+                    all_rhythm.add(tuple(sorted(rhythm1)))
+                    stanza = 0
+                    rhythm1 = []
+                    poem += 1
+
+    return all_rhythm
+
+
 all_words, all_poems, all_lines = process_data('../project2data/shakespeare.txt')
+
+all_bigrams = compute_bigram_count(all_lines)
+
+all_rhythm = compute_rhythm_dictionary(all_lines)
 
 states = range(10)
 symbols = list(all_words)
