@@ -1,0 +1,30 @@
+from nltk.tokenize import word_tokenize
+from nltk.tag.hmm import HiddenMarkovModelTagger, HiddenMarkovModelTrainer
+from nltk.probability import (DictionaryConditionalProbDist,
+                              RandomProbDist)
+import numpy as np
+from HMM import unsupervised_HMM
+import random
+import time
+import pickle
+
+def save_obj(obj, name):
+    with open(name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+def load_obj(name):
+    with open(name + '.pkl', 'rb') as f:
+        return pickle.load(f)
+                
+        
+training = load_obj('training_data')
+word_dict = load_obj('word_dictionary')
+curr_time = time.time()
+HMM = unsupervised_HMM(training, 15)
+A = HMM.A
+O = HMM.O
+
+save_obj(A, 'transition_matrix')
+save_obj(O, 'observation_matrix')
+
+
