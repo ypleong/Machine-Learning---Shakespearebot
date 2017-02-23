@@ -1,6 +1,7 @@
 from nltk.tokenize import word_tokenize
 import pickle
-
+import operator
+import string
 
 def process_data(filename):
     all_lines = []
@@ -191,7 +192,7 @@ def save_obj(obj, name):
 
 
 
-all_words, all_poems, all_lines = process_data('../project2data/shakespeare.txt')
+all_words, all_poems, all_lines = process_data('../../project2data/shakespeare.txt')
 
 all_bigrams = compute_bigram_count(all_lines, all_words)
 
@@ -201,7 +202,13 @@ training_line, training_symbols = replace_bigram(all_bigrams, all_lines, thresho
 
 training_line_int, dictionary = convert_to_integer(training_symbols, training_line)
 
+dictionary_2 = dict((v,k) for k,v in dictionary.iteritems())
+
 save_obj(training_line_int.reverse(), 'training_data')
 save_obj(dictionary, 'word_dictionary')
+save_obj(dictionary_2, 'word_dictionary_reverse')
 save_obj(training_symbols, 'symbols')
 save_obj(all_rhythm, 'rhythm')
+
+print(dictionary_2)
+print(all_rhythm)
