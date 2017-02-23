@@ -12,7 +12,7 @@ import string
 
 def process_data(filename):
     all_lines = []
-    all_words = set()
+    all_words = {}
     all_poems = []
     poem_temp = []
     with open(filename) as f:
@@ -20,7 +20,11 @@ def process_data(filename):
             line_tokens = [word.lower() for word in word_tokenize(line)]
 
             if len(line_tokens) > 1:
-                all_words.update(line_tokens)
+                for word in line_tokens:
+                    if word in all_words:
+                        all_words[word] += 1
+                    else:
+                        all_words[word] = 1
                 all_lines.append(line_tokens)
                 poem_temp += line_tokens
             elif len(line_tokens) == 1:
@@ -87,7 +91,7 @@ def save_obj(obj, name):
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
-def compute_bigram_count(all_lines):
+def compute_bigram_count(all_lines, all_words):
     bigram_list = {}
     for line in all_lines:
         for ind in range(len(line)-1):
@@ -96,7 +100,31 @@ def compute_bigram_count(all_lines):
             else:
                 bigram_list[(line[ind], line[ind + 1])] = 1
 
-    return sorted(bigram_list.items(), key=operator.itemgetter(1), reverse=True)
+    bigram_list = sorted(bigram_list.items(), key=operator.itemgetter(1), reverse=True)
+
+    for ind, (bigram, value) in enumerate(bigram_list):
+        bigram_list[ind] = (bigram, all_words[bigram[0]], all_words[bigram[1]], value)
+
+    return bigram_list
+
+
+def replace_bigram(all_bigrams, all_lines, threshold=20):
+    bigrams_that_matters = [item[0] for item in all_bigrams if item[-1] >= threshold]
+
+    all_words = set()
+    for line in all_lines:
+        # new_line = []
+        for ind in range(len(line) - 1):
+            try:
+                if (line[ind], line[ind + 1]) in bigrams_that_matters:
+                    line[ind] = line[ind] + ' ' + line[ind + 1]
+                    del line[ind+1]
+            except IndexError:
+                pass
+
+        all_words.update(line)
+
+    return all_lines, list(all_words)
 
 
 def compute_rhythm_dictionary(all_lines):
@@ -199,14 +227,39 @@ def compute_rhythm_dictionary(all_lines):
     return all_rhythm
 
 
+def convert_to_integer(all_words, all_lines):
+    dictionary = {i: word for i, word in enumerate(all_words)}
+    new_lines = []
+    for line in all_lines:
+        new_line = []
+        for word in line:
+            new_line.append(all_words.index(word))
+        new_lines.append(new_line)
+
+    return new_lines, dictionary
+
+
+def convert_to_word(int_lines, dictionary):
+    new_lines = []
+    for line in int_lines:
+        new_lines.append([dictionary[ind] for ind in line])
+
+    return new_lines
+
 all_words, all_poems, all_lines = process_data('../project2data/shakespeare.txt')
 
-all_bigrams = compute_bigram_count(all_lines)
+all_bigrams = compute_bigram_count(all_lines, all_words)
 
 all_rhythm = compute_rhythm_dictionary(all_lines)
 
+training_line, training_symbols = replace_bigram(all_bigrams, all_lines, threshold=20)
+
+training_line_int, dictionary = convert_to_integer(training_symbols, training_line)
+
+new_lines = convert_to_word(training_line_int, dictionary)
+
 states = range(10)
-symbols = list(all_words)
+symbols = list(all_words)  # need to be fixed
 
 L = len(states)
 D = len(symbols)
