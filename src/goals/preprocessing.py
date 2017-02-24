@@ -8,10 +8,13 @@ def process_data(filename):
     all_words = {}
     all_poems = []
     poem_temp = []
+
+    punctuations = list(string.punctuation)
+
     with open(filename) as f:
         for line in f.readlines():
             line_tokens = [word.lower() for word in word_tokenize(line)]
-            line_tokens = [x for x in line_tokens if x not in ['(', ')']]
+            line_tokens = [x for x in line_tokens if x not in punctuations]
 
             if len(line_tokens) > 1:
                 for word in line_tokens:
@@ -52,6 +55,7 @@ def replace_bigram(all_bigrams, all_lines, threshold=20):
     bigrams_that_matters = [item[0] for item in all_bigrams if item[-1] >= threshold]
 
     all_words = set()
+    new_lines = []
     for line in all_lines:
         # new_line = []
         for ind in range(len(line) - 1):
@@ -62,9 +66,11 @@ def replace_bigram(all_bigrams, all_lines, threshold=20):
             except IndexError:
                 pass
 
+        line = [item for item in line if item != "'s"]
+        new_lines.append(line)
         all_words.update(line)
 
-    return all_lines, list(all_words)
+    return new_lines, list(all_words)
 
 
 def compute_rhythm_dictionary(all_lines):
@@ -192,15 +198,14 @@ def save_obj(obj, name):
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
-
 all_words, all_poems, all_lines = process_data('../../project2data/shakespeare.txt')
 
 all_bigrams = compute_bigram_count(all_lines, all_words)
 
 all_rhythm = compute_rhythm_dictionary(all_lines)
 
-training_line, training_symbols = replace_bigram(all_bigrams, all_lines, threshold=20)
-training_poem, training_symbols = replace_bigram(all_bigrams, all_poems, threshold=20)
+training_line, training_symbols = replace_bigram(all_bigrams, all_lines, threshold=15)
+training_poem, training_symbols = replace_bigram(all_bigrams, all_poems, threshold=15)
 
 training_line_int, dictionary = convert_to_integer(training_symbols, training_line)
 training_poem_int, dictionary = convert_to_integer(training_symbols, training_poem)
