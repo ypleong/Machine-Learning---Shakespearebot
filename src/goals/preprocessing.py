@@ -11,6 +11,7 @@ def process_data(filename):
     with open(filename) as f:
         for line in f.readlines():
             line_tokens = [word.lower() for word in word_tokenize(line)]
+            line_tokens = [x for x in line_tokens if x not in ['(', ')']]
 
             if len(line_tokens) > 1:
                 for word in line_tokens:
@@ -199,12 +200,18 @@ all_bigrams = compute_bigram_count(all_lines, all_words)
 all_rhythm = compute_rhythm_dictionary(all_lines)
 
 training_line, training_symbols = replace_bigram(all_bigrams, all_lines, threshold=20)
+training_poem, training_symbols = replace_bigram(all_bigrams, all_poems, threshold=20)
 
 training_line_int, dictionary = convert_to_integer(training_symbols, training_line)
+training_poem_int, dictionary = convert_to_integer(training_symbols, training_poem)
 
 dictionary_2 = dict((v,k) for k,v in dictionary.iteritems())
 
-save_obj(training_line_int.reverse(), 'training_data')
+training_line_int.reverse()
+training_poem_int.reverse()
+
+save_obj(training_line_int, 'training_data')
+save_obj(training_poem_int, 'training_poem_data')
 save_obj(dictionary, 'word_dictionary')
 save_obj(dictionary_2, 'word_dictionary_reverse')
 save_obj(training_symbols, 'symbols')
