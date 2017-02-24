@@ -66,7 +66,7 @@ def replace_bigram(all_bigrams, all_lines, threshold=20):
             except IndexError:
                 pass
 
-        line = [item for item in line if item != "'s"]
+        line = [item for item in line if item not in ["'s", "'t"]]
         new_lines.append(line)
         all_words.update(line)
 
