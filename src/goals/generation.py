@@ -4,6 +4,7 @@ import pickle
 from nltk.corpus import cmudict
 import string
 from HMM import HiddenMarkovModel
+from countsyl import count_syllables
 
 phoneme_dict = dict(cmudict.entries())
 
@@ -53,9 +54,6 @@ for i in range(7):
 
 for l in range(14):
     #Set first word
-    #first_index = random.randint(0,D-1)
-    #first_word = word_dict[first_index]
-    #rand_sequence = [first_word]
     if(l == 0 or l == 1):
         first_word = rhyme_pair[l][rand_selector[l]]
         first_index = word_dict_rev[first_word]
@@ -96,8 +94,7 @@ for l in range(14):
         else:
             first_word = rhyme_pair[l-7][1]
             first_index = word_dict_rev[first_word]
-        
-    rand_sequence=[first_word]
+
     #Get P(y|x) given first x
     P_yx = [0. for _ in range(L)]
     alphas = HMM.forward([first_index],normalize=True)
@@ -134,10 +131,15 @@ for l in range(14):
 #        state.append(k)
 #        break
 
+
     prev_k = -1
+            
     #Update each state and emission
     i = 0
-    syllable_count = syllables_in_word(first_word)
+    syllable_count = count_syllables(first_word)
+    if (syllable_count == 0):
+        syllable_count = syllables_in_word(first_word)
+    rand_sequence=[first_word]
     while syllable_count < 10:
         #Update each state based on previous state
         P_A = A[state[i]]
@@ -156,16 +158,20 @@ for l in range(14):
                     break
                 else:
                     new_word = word_dict[k]
-                    syllable_count += syllables_in_word(new_word)
+                
+                    curr_syllable = count_syllables(new_word)
+                    if curr_syllable == 0:
+                        curr_syllable = syllables_in_word(new_word)
+                    syllable_count += curr_syllable
+                
                     if (syllable_count > 10):
                         state.pop()
-                        syllable_count -= syllables_in_word(new_word)
+                        syllable_count -= count_syllables(new_word)
                         break
                     else:
                         rand_sequence.append(new_word)
                         prev_k = k
                         i = i + 1
                         break
-    #Reverse list
     rand_sequence.reverse()
     print(rand_sequence)
