@@ -9,14 +9,9 @@ from countsyl import count_syllables
 phoneme_dict = dict(cmudict.entries())
 
 def syllables_in_word(word):
-    '''Attempts to count the number of syllables in the string argument 'word'.
-    Limitation: word must be in the CMU dictionary (but that was a premise of the Exercise)
-    "Algorithm": no. syllables == no. (0,1,2) digits in the dictionary entry, right??        
-    '''
-    # although listcomps may be readable, you can't insert print statements to instrument them!!
+    #Attempts to count the number of syllables in the string argument 'word'.
     if phoneme_dict.has_key(word):
-        #return sum([ phoneme.count(str(num)) for phoneme in phoneme_dict[word] for num in range(3) ])
-        return len( [ph for ph in phoneme_dict[word] if ph.strip(string.letters)] )   # more destructive; less efficient? NO! see timeit results in my comments below
+        return len( [ph for ph in phoneme_dict[word] if ph.strip(string.letters)] )  
     else:
         return 0
 
@@ -37,12 +32,12 @@ def load_obj(name):
         return pickle.load(f)
 
 #Load in observation matrix and word dictionary (int,word pairs)
-O = load_obj('observation_matrix')
+O = load_obj('./data/observation_matrix_line_20')
 word_dict_rev = load_obj('word_dictionary_reverse')
 word_dict = load_obj('word_dictionary')
-A = load_obj('transition_matrix')
+A = load_obj('./data/transition_matrix_line_20')
 rhythm_dict = load_obj('rhythm')
-HMM = load_obj('HMM')
+HMM = load_obj('./data/HMM_line_25')
 L = len(O)
 D = len(O[0])
 
@@ -133,7 +128,6 @@ for l in range(14):
 
 
     prev_k = -1
-            
     #Update each state and emission
     i = 0
     syllable_count = count_syllables(first_word)
@@ -175,3 +169,4 @@ for l in range(14):
                         break
     rand_sequence.reverse()
     print(rand_sequence)
+
