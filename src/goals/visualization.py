@@ -61,7 +61,9 @@ def plot_observation_bar(O):
     
     plt.savefig("observation_graph.png")  # save as png
     plt.show()  # display
+    
 
+    
 def find_top_words_for_states(n, O, symbols):
     """
     Top n words for each state.
@@ -83,8 +85,8 @@ def save_obj(obj, name):
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
-A_list = load_obj('transition_matrix')
-O_list = load_obj('observation_matrix')
+A_list = load_obj('./data/transition_matrix_reverse_8')
+O_list = load_obj('./data/observation_matrix_reverse_8')
 symbols = load_obj('symbols')
 
 A = np.array(A_list,dtype=np.float64)
