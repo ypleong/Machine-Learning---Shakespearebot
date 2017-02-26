@@ -18,6 +18,17 @@
 \begin{document}
 \pagestyle{fancy}
 
+\section*{Tokenizing}
+
+\medskip
+
+The sonnets were initially tokenized by words using the NLTK's function word_tokenizer. 
+
+The first change we made after running the learning algorithm was to remove all punctuations. We decided to generate the sentences backward using a seed (i.e. a word) to achieve accurate ending rhythm. Thus, the punctuations were mostly irrelevant because they showed up mostly in the end.
+
+Furthermore, we counted the bigrams within the sonnets and replaced each pair of consecutive words that showed up frequently in the sonnets as a new token. In total, 29 pairs of words were replaced. Each pair appeared in the sonnets at least 15 times. The top five examples were ``my love'', ``thou art'', ``my self'', ``in the '', ``that i'' which appeared 41, 33, 29, 29, and 28 times respectively.
+
+
 \section*{Algorithm}
 
 \medskip
@@ -157,531 +168,77 @@ The poems we generated had some structure and some grammatically sensical lines.
 
 \medskip
 
-\subsection*{Code for Question 2 (HMM.py)}
-\small
-\begin{lstlisting}[language=Python]
-########################################
-# CS/CNS/EE 155 2017
-# Problem Set 5
-#
-# Author:       Richard Cheng, Andrew Kang, Avishek Dutta
-# Description:  Set 5 skeleton code
-########################################
+\section*{Visualization and Interpretation}
+
+The top 10 words that associate with the hidden state are given in Table \ref{tab:top-10-words} (the numbers below the words denote the probability). The number in bracket is the total number of top words to form approximately 0.5 probability. Hidden state 11 and 12 have probabilities that are more diffused and they includes more words that are nouns, adverbs or adjectives. Hidden state 1, 8, 9, and 18 have a more concentrated probabilities, and they tend to be words that are used to connect phrases like particles, conjunctions, and pronouns. Hidden state 10 includes the 5 ``wh'' words for questions. 
+
+Figure \ref{fig:observation-matrix} shows the observation matrix in which each row is normalized to 0 and 1 for clearer color constrast. Each column represents a token and the columns are sorted by the frequency of the tokens. The top plot shows all tokens, and the bottom plot shows the first 100 tokens. From the plots, we can see that the most common words in general have a higher probability than the less common words. Words like ``and'' which are very frequently used (473 times) in the sonnets show up in a few hidden states with high probability.
+
+If we also consider the transition matrix (Figure \ref{fig:state-transition}), we can observe some interesting state transitions that makes gramatical sense. For example, hidden state 19 is most likely to transition to hidden state 17. Combinations of the top 3 words ``of'', ``in'', and ``to'' in hidden state 19 with most of the top 10 words in hidden state 17 seem to make gramatical sense.
+
+
+\begin{table}[h!]
+	\centering
+	\caption{Top 10 words for hidden states and the probability. The number in bracket is the total number of top words to form approximately 0.5 probability.}\label{tab:top-10-words}
+	\begin{tabular}{c||l|l|l|l|l|l|l|l|l|l}
+		\hline
+		State & \multicolumn{10}{c}{Top 10 Words}\\ \hline
+		0 & in & the & by & own & my & with & make & to & show & your \\
+		(26) & 0.1054 & 0.0399 & 0.0352 & 0.0300 & 0.0250 & 0.0244 & 0.0230 & 0.0230 & 0.0149 & 0.0140 \\ \hline
+		1 & the & my & a & so & such & their & his & of the & well & thine \\
+		(9) & 0.2325 & 0.0604 & 0.0481 & 0.0337 & 0.0319 & 0.0283 & 0.0251 & 0.0204 & 0.0164 & 0.0158 \\ \hline
+		2 & so & not & and & of & a & thy & me & self & youth & thee \\
+		(50) & 0.0364 & 0.0248 & 0.0247 & 0.0234 & 0.0223 & 0.0203 & 0.0195 & 0.0169 & 0.0143 & 0.0140 \\ \hline
+		3 & all & to & that & for & the & from & with & you & he & yet \\
+		(23) & 0.0454 & 0.0417 & 0.0413 & 0.0400 & 0.0313 & 0.0305 & 0.0236 & 0.0221 & 0.0192 & 0.0187 \\ \hline
+		4 & be & but & more & are & you & which & is & her & so & i am \\
+		(30) & 0.0444 & 0.0407 & 0.0402 & 0.0401 & 0.0332 & 0.0262 & 0.0257 & 0.0205 & 0.0179 & 0.0177 \\ \hline
+		5 & and & that & for & so & no & now & then & eyes & to me & when i \\
+		(35) & 0.0985 & 0.0387 & 0.0361 & 0.0311 & 0.0217 & 0.0210 & 0.0152 & 0.0150 & 0.0148 & 0.0128 \\ \hline
+		6 & my & it & they & me & i & but & those & this & her & is \\
+		(15) & 0.0993 & 0.0854 & 0.0403 & 0.0371 & 0.0271 & 0.0259 & 0.0257 & 0.0228 & 0.0226 & 0.0205 \\ \hline
+		7 & to & thy & your & my & not & or & the & dost & on & as \\
+		(21) & 0.0702 & 0.0565 & 0.0442 & 0.0384 & 0.0333 & 0.0318 & 0.0217 & 0.0215 & 0.0201 & 0.0167 \\ \hline
+		8 & and & which & so & who & therefore & if & even & not & or & for \\
+		(2) & 0.3856 & 0.0657 & 0.0509 & 0.0439 & 0.0202 & 0.0189 & 0.0136 & 0.0134 & 0.0112 & 0.0106 \\ \hline
+		9 & and & that & as & but & when & how & which & since & for & can \\
+		(3) & 0.2786 & 0.0876 & 0.0825 & 0.0707 & 0.0523 & 0.0423 & 0.0287 & 0.0221 & 0.0193 & 0.0151 \\ \hline
+		10 & if & what & that & nor & when & where & the & let & why & how \\
+		(10) & 0.0723 & 0.0719 & 0.0719 & 0.0502 & 0.0492 & 0.0400 & 0.0380 & 0.0336 & 0.0311 & 0.0221 \\ \hline
+		11 & love & i & one & hath & beauty & this & most & in the & will & part \\
+		(61) & 0.0354 & 0.0265 & 0.0209 & 0.0208 & 0.0200 & 0.0185 & 0.0178 & 0.0177 & 0.0175 & 0.0149 \\ \hline
+		12 & is & time & eyes & do & should & a & sun & summer & age & best \\
+		(81) & 0.0305 & 0.0235 & 0.0183 & 0.0143 & 0.0126 & 0.0116 & 0.0105 & 0.0101 & 0.0100 & 0.0095 \\ \hline
+		13 & i & that & with & not & my & do & did & she & see & is \\
+		(31) & 0.0914 & 0.0403 & 0.0359 & 0.0352 & 0.0342 & 0.0220 & 0.0197 & 0.0193 & 0.0180 & 0.0168 \\ \hline
+		14 & thy & a & his & in & you & your & sweet & have & the & with \\
+		(18) & 0.0958 & 0.0783 & 0.0379 & 0.0368 & 0.0294 & 0.0269 & 0.0267 & 0.0252 & 0.0237 & 0.0196 \\ \hline
+		15 & thou & of & is & in & all & being & and & were & from & day \\
+		(31) & 0.1502 & 0.0474 & 0.0367 & 0.0202 & 0.0170 & 0.0162 & 0.0136 & 0.0133 & 0.0126 & 0.0114 \\ \hline
+		16 & to & i & doth & mine & and & than & shall & as & by & thine \\
+		(19) & 0.1011 & 0.0712 & 0.0368 & 0.0312 & 0.0304 & 0.0244 & 0.0223 & 0.0199 & 0.0197 & 0.0194 \\ \hline
+		17 & thee & with & me & be & love & is & their & all & this & heart \\
+		(28) & 0.0661 & 0.0605 & 0.0547 & 0.0405 & 0.0358 & 0.0269 & 0.0249 & 0.0176 & 0.0168 & 0.0155 \\ \hline
+		18 & o & but & for & or & then & yet & against & save & to & when \\
+		(3) & 0.1761 & 0.1683 & 0.1355 & 0.0924 & 0.0595 & 0.0321 & 0.0303 & 0.0241 & 0.0198 & 0.0169 \\ \hline
+		19 & of & in & to & not & i & doth & and & will & do & of thy \\
+		(14) & 0.1831 & 0.0562 & 0.0431 & 0.0380 & 0.0269 & 0.0249 & 0.0205 & 0.0200 & 0.0166 & 0.0150 \\ \hline
+	\end{tabular}
+\end{table}
+
+\begin{figure}[h!]
+	\centering
+	\subfloat{\includegraphics[width=\textwidth, clip=true, trim=0cm 2cm 0cm 0cm]{observation_matrix_normalized}} \\
+	\subfloat{\includegraphics[width=\textwidth, clip=true, trim=0.5cm 0cm 1cm 0cm]{observation_matrix_normalized_zoom}} 
+	\caption{Normalized observation matrix. The top plot shows all tokens, and the bottom plot zooms into the first 100 tokens.}\label{fig:observation-matrix}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.65\textwidth, clip=true, trim=1cm 1cm 1cm 1cm]{transition_matrix}
+	\caption{State transition matrix}\label{fig:state-transition}
+\end{figure}
 
-# You can use this (optional) skeleton code to complete the HMM
-# implementation of set 5. Once each part is implemented, you can simply
-# execute the related problem scripts (i.e. run `python 2G.py`) to quickly
-# see the results from your code.
-#
-# Some pointers to get you started:
-#
-#     - Choose your notation carefully and consistently! Readable
-#       notation will make all the difference in the time it takes you
-#       to implement this class, as well as how difficult it is to debug.
-#
-#     - Read the documentation in this file! Make sure you know what
-#       is expected from each function and what each variable is.
-#
-#     - Any reference to "the (i, j)^th" element of a matrix T means that
-#       you should use T[i][j].
-#
-#     - Note that in our solution code, no NumPy was used. That is, there
-#       are no fancy tricks here, just basic coding. If you understand HMMs
-#       to a thorough extent, the rest of this implementation should come
-#       naturally. However, if you'd like to use NumPy, feel free to.
-#
-#     - Take one step at a time! Move onto the next algorithm to implement
-#       only if you're absolutely sure that all previous algorithms are
-#       correct. We are providing you waypoints for this reason.
-#
-# To get started, just fill in code where indicated. Best of luck!
 
-import random
-
-class HiddenMarkovModel:
-    
-    Class implementation of Hidden Markov Models.
-    
-
-    def __init__(self, A, O):
-        
-        Initializes an HMM. Assumes the following:
-            - States and observations are integers starting from 0. 
-            - There is a start state (see notes on A_start below). There
-              is no integer associated with the start state, only
-              probabilities in the vector A_start.
-            - There is no end state.
-
-        Arguments:
-            A:          Transition matrix with dimensions L x L.
-                        The (i, j)^th element is the probability of
-                        transitioning from state i to state j. Note that
-                        this does not include the starting probabilities.
-            O:          Observation matrix with dimensions L x D.
-                        The (i, j)^th element is the probability of
-                        emitting observation j given state i.
-
-        Parameters:
-            L:          Number of states.
-            D:          Number of observations.
-            A:          The transition matrix.
-            O:          The observation matrix.
-            A_start:    Starting transition probabilities. The i^th element
-                        is the probability of transitioning from the start
-                        state to state i. For simplicity, we assume that
-                        this distribution is uniform.
-        
-        self.L = len(A)
-        self.D = len(O[0])
-        self.A = A
-        self.O = O
-        self.A_start = [1. / self.L for i in range(self.L)]
-
-    def viterbi(self, x):
-        
-        Uses the Viterbi algorithm to find the max probability state 
-        sequence corresponding to a given input sequence.
-
-        Arguments:
-            x:          Input sequence in the form of a list of length M,
-                        consisting of integers ranging from 0 to D - 1.
-
-        Returns:
-            max_seq:    Output sequence corresponding to x with the highest
-                        probability.
-        
-        M = len(x)      # Length of sequence.
-
-        # The (i, j)^th elements of probs and seqs are the max probability
-        # of the prefix of length i ending in state j and the prefix
-        # that gives this probability, respectively.
-        #
-        # For instance, probs[1][0] is the probability of the prefix of
-        # length 1 ending in state 0.
-        probs = [[0. for i in range(self.L)] for j in range(M + 1)]
-        seqs = [['' for i in range(self.L)] for j in range(M + 1)]
-
-        #Initialize probabilities and sequences
-        probs[0] = self.A_start
-        for i in range(self.L):
-            probs[0][i] = self.A_start[i]*self.O[i][x[0]]
-            seqs[0][i] = str(i)
-
-        #Implement Viterbi algorithm to populate sequences & associated probabilities
-        for k in range(1,M):
-            for j in range(self.L):
-                dummy_probs = []
-                for i in range(self.L):
-                    dummy_probs.append(probs[k-1][i]*self.A[i][j]*self.O[j][x[k]])
-                index = dummy_probs.index(max(dummy_probs))
-                probs[k][j] = max(dummy_probs)
-                seqs[k][j] = seqs[k-1][index] + str(j)
-                
-        
-
-        #Return the maximum likelihood sequence
-        max_seq_index = probs[M-1].index(max(probs[M-1]))
-        max_seq = seqs[M-1][max_seq_index]
-
-        return max_seq
-
-    def forward(self, x, normalize=False):
-        
-        Uses the forward algorithm to calculate the alpha probability
-        vectors corresponding to a given input sequence.
-
-        Arguments:
-            x:          Input sequence in the form of a list of length M,
-                        consisting of integers ranging from 0 to D - 1.
-            normalize:  Whether to normalize each set of alpha_j(i) vectors
-                        at each i. This is useful to avoid underflow in
-                        unsupervised learning.
-
-        Returns:
-            alphas:     Vector of alphas.
-                        The (i, j)^th element of alphas is alpha_j(i),
-                        i.e. the probability of observing prefix x^1:i
-                        and state y^i = j.
-
-                        e.g. alphas[1][0] corresponds to the probability
-                        of observing x^1:1, i.e. the first observation,
-                        given that y^1 = 0, i.e. the first state is 0.
-        
-        M = len(x)      # Length of sequence.
-        alphas = [[0. for i in range(self.L)] for j in range(M + 1)]
-        
-        #Initialize alphas
-        for i in range(self.L):
-            alphas[0][i] = self.A_start[i]
-            alphas[1][i] = self.A_start[i]*self.O[i][x[0]]
-
-        #Normalize first row of alphas
-        if normalize:
-            normalize_sum = sum(alphas[1])
-            for i in range(self.L):
-                alphas[1][i] = alphas[1][i]/normalize_sum
-        #Update alphas based on A and O
-        for j in range(1,M):
-            for i in range(self.L):
-                dummy_var = 0.0
-                for k in range(self.L):
-                    dummy_var = dummy_var + alphas[j][k]*self.A[k][i]
-                alphas[j+1][i] = dummy_var*self.O[i][x[j]]
-            #Normalize each row of alphas
-            if normalize:
-                normalize_sum = sum(alphas[j+1])
-                for i in range(self.L):
-                    alphas[j+1][i] = alphas[j+1][i]/normalize_sum
-        return alphas
-
-    def backward(self, x, normalize=False):
-        
-        Uses the backward algorithm to calculate the beta probability
-        vectors corresponding to a given input sequence.
-
-        Arguments:
-            x:          Input sequence in the form of a list of length M,
-                        consisting of integers ranging from 0 to D - 1.
-            normalize:  Whether to normalize each set of alpha_j(i) vectors
-                        at each i. This is useful to avoid underflow in
-                        unsupervised learning.
-
-        Returns:
-            betas:      Vector of betas.
-                        The (i, j)^th element of betas is beta_j(i), i.e.
-                        the probability of observing prefix x^(i+1):M and
-                        state y^i = j.
-        
-        M = len(x)      # Length of sequence.
-        betas = [[0. for i in range(self.L)] for j in range(M + 1)]
-        #Initialize betas
-        for i in range(self.L):
-            betas[M][i] = 1.0
-
-        #Normalize Mth row of betas
-        if normalize:
-            normalize_sum = sum(betas[M])
-            for i in range(self.L):
-                betas[M][i] = betas[M][i]/normalize_sum
-        #Update betas based on A and O
-        for j in range(M-1,-1,-1):
-            for i in range(self.L):
-                dummy_var = 0.0
-                for k in range(self.L):
-                    dummy_var = dummy_var + betas[j+1][k]*self.A[i][k]*self.O[k][x[j]]
-                betas[j][i] = dummy_var
-            #Normalize each row of betas
-            if normalize:
-                normalize_sum = sum(betas[j])
-                for i in range(self.L):
-                        betas[j][i] = betas[j][i]/normalize_sum
-
-        return betas
-
-    def supervised_learning(self, X, Y):
-        
-        Trains the HMM using the Maximum Likelihood closed form solutions
-        for the transition and observation matrices on a labeled
-        datset (X, Y). Note that this method does not return anything, but
-        instead updates the attributes of the HMM object.
-
-        Arguments:
-            X:          A dataset consisting of input sequences in the form
-                        of lists of variable length, consisting of integers 
-                        ranging from 0 to D - 1. In other words, a list of
-                        lists.
-            Y:          A dataset consisting of state sequences in the form
-                        of lists of variable length, consisting of integers 
-                        ranging from 0 to L - 1. In other words, a list of
-                        lists.
-                        Note that the elements in X line up with those in Y.
-        
-        # Calculate each element of A using the M-step formulas.
-        counts_A = [[0. for i in range(self.L)] for j in range(self.L)]
-        states_A = [0. for i in range(self.L)]
-        A = [[0. for i in range(self.L)] for j in range(self.L)]
-        
-        for i in range(len(Y)):
-            for j in range(1,len(Y[i])):
-                prev = Y[i][j-1]
-                curr = Y[i][j]
-                counts_A[prev][curr] += 1
-                states_A[prev] += 1
-        for i in range(self.L):
-            for j in range(self.L):
-                A[i][j] = counts_A[i][j]/states_A[i]
-
-        self.A = A
-
-        # Calculate each element of O using the M-step formulas.
-        counts_O = [[0. for i in range(self.D)] for j in range(self.L)]
-        states_O = [0. for i in range(self.L)]
-        O = [[0. for i in range(self.D)] for j in range(self.L)]
-        
-        for i in range(len(X)):
-            for j in range(len(X[i])):
-                counts_O[Y[i][j]][X[i][j]] += 1
-                states_O[Y[i][j]] += 1 
-
-        for i in range(self.L):
-            for j in range(self.D):
-                O[i][j] = counts_O[i][j]/states_O[i]
-        
-        self.O = O
-        
-        pass
-
-    def unsupervised_learning(self, X):
-        
-        Trains the HMM using the Baum-Welch algorithm on an unlabeled
-        datset X. Note that this method does not return anything, but
-        instead updates the attributes of the HMM object.
-
-        Arguments:
-            X:          A dataset consisting of input sequences in the form
-                        of lists of length M, consisting of integers ranging
-                        from 0 to D - 1. In other words, a list of lists.
-        
-        #A and O already initialized in self object
-        A =[[0. for i in range(self.L)] for l in range(self.L)]
-        O =[[0. for i in range(self.D)] for l in range(self.L)]
-        A_num =[[0. for i in range(self.L)] for l in range(self.L)]
-        A_den = [0. for i in range(self.L)]
-        O_num =[[0. for i in range(self.D)] for l in range(self.L)]
-        O_den =[0. for i in range(self.L)]
-        
-        #Iterate EM algorithm 1000 times
-        for N in range(1000):
-            for k in range(len(X)):
-                #Compute first set of marginal probabilities (P1) for each sequence in X
-                P1 = [[0. for i in range(self.L)] for j in range(len(X[k]))]
-                alpha = self.forward(X[k],normalize=True)
-                beta = self.backward(X[k],normalize=True)
-                for i in range(len(X[k])):
-                    prob_sum = 0.0
-                    for j in range(self.L):
-                        prob_sum = prob_sum +  alpha[i+1][j]*beta[i+1][j]
-                    for j in range(self.L):
-                        P1[i][j] = alpha[i+1][j]*beta[i+1][j]/prob_sum
-
-                #Calculate necessary parameters to estimate O based on marginal probabilities
-                for i in range(len(X[k])):
-                    for j in range(self.L):
-                        O_den[j] += P1[i][j]
-                        O_num[j][X[k][i]] += P1[i][j]
-
-                #Calculate second set of marginal probabilities (P2) for each sequence in X
-                P2 = [[[0. for i in range(self.L)] for l in range(self.L)] for j in range(len(X[k]))]
-                for i in range(0,len(X[k])):
-                    prob_sum = 0.0
-                    for prev in range(self.L):
-                        for curr in range(self.L):
-                            P2[i][prev][curr] = alpha[i][prev]*self.A[prev][curr]*self.O[curr][X[k][i]]*beta[i+1][curr]
-                            prob_sum += alpha[i][prev]*self.A[prev][curr]*self.O[curr][X[k][i]]*beta[i+1][curr]
-                    for prev in range(self.L):
-                        for curr in range(self.L):
-                            P2[i][prev][curr] = P2[i][prev][curr]/prob_sum
-
-                #Calculate necessary parameters to estimate A based on marginal probabilities
-                for i in range(1,len(X[k])):
-                    for prev in range(self.L):
-                        for curr in range(self.L):
-                            A_den[prev] += P2[i][prev][curr]
-                            A_num[prev][curr] += P2[i][prev][curr]
-                        
-            #Update A and O based on calculated probabilities
-            for prev in range(self.L):
-                for curr in range(self.L):
-                    A[prev][curr] = A_num[prev][curr]/A_den[prev]
-            for i in range(self.L):
-                for j in range(self.D):
-                    O[i][j] = O_num[i][j]/O_den[i]
-
-            #Update A and O in the HMM object for this EM iteration                                   
-            self.A = A
-            self.O = O
-
-        pass
-
-    def generate_emission(self, M):
-        
-        Generates an emission of length M, assuming that the starting state
-        is chosen uniformly at random. 
-
-        Arguments:
-            M:          Length of the emission to generate.
-
-        Returns:
-            emission:   The randomly generated emission as a string.
-        
-        emission = ''
-
-        #Initialize state & emission length
-        M = 20
-        state = [0. for i in range(M+1)]
-        state[0] = random.randint(0,self.L-1)
-        P_O = self.O[state[0]]
-        r_O = random.uniform(0,1)
-        for k in range(self.D):
-            if r_O < sum(P_O[0:k+1]):
-                emission += str(k)
-                break
-
-        #Update each state and emission
-        for i in range(1,M):
-            #Update each state based on previous state
-            P_A = self.A[state[i-1]]
-            r_A = random.uniform(0,1)            
-            for k in range(self.L):
-                if r_A < sum(P_A[0:k+1]):
-                    state[i] = k
-                    break
-            
-            #Determine current emission based on current state
-            P_O = self.O[state[i]]
-            r_O = random.uniform(0,1)
-            for k in range(self.D):
-                if r_O < sum(P_O[0:k+1]):
-                    emission += str(k)
-                    break
-
-        return emission
-
-    def probability_alphas(self, x):
-        
-        Finds the maximum probability of a given input sequence using
-        the forward algorithm.
-
-        Arguments:
-            x:          Input sequence in the form of a list of length M,
-                        consisting of integers ranging from 0 to D - 1.
-
-        Returns:
-            prob:       Total probability that x can occur.
-        
-        # Calculate alpha vectors.
-        alphas = self.forward(x)
-
-        # alpha_j(M) gives the probability that the output sequence ends
-        # in j. Summing this value over all possible states j gives the
-        # total probability of x paired with any output sequence, i.e. the
-        # probability of x.
-        prob = sum(alphas[-1])
-        return prob
-
-    def probability_betas(self, x):
-        
-        Finds the maximum probability of a given input sequence using
-        the backward algorithm.
-
-        Arguments:
-            x:          Input sequence in the form of a list of length M,
-                        consisting of integers ranging from 0 to D - 1.
-
-        Returns:
-            prob:       Total probability that x can occur.
-        
-        betas = self.backward(x)
-
-        # beta_j(0) gives the probability of the output sequence. Summing
-        # this over all states and then normalizing gives the total
-        # probability of x paired with any output sequence, i.e. the
-        # probability of x.
-        #prob = sum(betas[0]) / self.L
-        prob = sum([betas[1][j] * self.A_start[j] * self.O[j][x[0]] \
-                                        for j in range(self.L)])
-        return prob
-
-def supervised_HMM(X, Y):
-    
-    Helper function to train a supervised HMM. The function determines the
-    number of unique states and observations in the given data, initializes
-    the transition and observation matrices, creates the HMM, and then runs
-    the training function for supervised learing.
-
-    Arguments:
-        X:          A list of variable length emission sequences 
-        Y:          A corresponding list of variable length state sequences
-                    Note that the elements in X line up with those in Y
-    
-    # Make a set of observations.
-    observations = set()
-    for x in X:
-        observations |= set(x)
-
-    # Make a set of states.
-    states = set()
-    for y in Y:
-        states |= set(y)
-    
-    # Compute L and D.
-    L = len(states)
-    D = len(observations)
-
-    # Randomly initialize and normalize matrices A and O.
-    A = [[random.random() for i in range(L)] for j in range(L)]
-
-    for i in range(len(A)):
-        norm = sum(A[i])
-        for j in range(len(A[i])):
-            A[i][j] /= norm
-    
-    O = [[random.random() for i in range(D)] for j in range(L)]
-
-    for i in range(len(O)):
-        norm = sum(O[i])
-        for j in range(len(O[i])):
-            O[i][j] /= norm
-
-    # Train an HMM with labeled data.
-    HMM = HiddenMarkovModel(A, O)
-    HMM.supervised_learning(X, Y)
-
-    return HMM
-
-def unsupervised_HMM(X, n_states):
-    
-    Helper function to train an unsupervised HMM. The function determines the
-    number of unique observations in the given data, initializes
-    the transition and observation matrices, creates the HMM, and then runs
-    the training function for unsupervised learing.
-
-    Arguments:
-        X:          A dataset consisting of input sequences in the form
-                    of lists of variable length, consisting of integers 
-                    ranging from 0 to D - 1. In other words, a list of lists.
-        n_states:   Number of hidden states to use in training.
-    
-    # Make a set of observations.
-    observations = set()
-    for x in X:
-        observations |= set(x)
-    
-    # Compute L and D.
-    L = n_states
-    D = len(observations)
-
-    # Randomly initialize and normalize matrices A and O.
-    random.seed(100)
-    A = [[random.random() for i in range(L)] for j in range(L)]
-
-    for i in range(len(A)):
-        norm = sum(A[i])
-        for j in range(len(A[i])):
-            A[i][j] /= norm
-    
-    O = [[random.random() for i in range(D)] for j in range(L)]
-
-    for i in range(len(O)):
-        norm = sum(O[i])
-        for j in range(len(O[i])):
-            O[i][j] /= norm
-
-    # Train an HMM with unlabeled data.
-    HMM = HiddenMarkovModel(A, O)
-    HMM.unsupervised_learning(X)
-
-    return HMM
-\end{lstlisting}
 
 \end{document}
