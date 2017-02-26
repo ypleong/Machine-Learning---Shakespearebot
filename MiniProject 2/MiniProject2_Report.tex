@@ -22,11 +22,13 @@
 
 \medskip
 
-The sonnets were initially tokenized by words using the NLTK's function word_tokenizer. 
+The sonnets were initially tokenized by words using the NLTK's function word_tokenizer because word is the smallest entity that we can tokenize in the sonnets such that we can still regenerate sentences with the tokens later. We created two types of data set. First, we consider each line as a sequence, and second, we consider each sonnet as a sequence.
 
-The first change we made after running the learning algorithm was to remove all punctuations. We decided to generate the sentences backward using a seed (i.e. a word) to achieve accurate ending rhythm. Thus, the punctuations were mostly irrelevant because they showed up mostly in the end.
+The first change we made after running the learning algorithm was to remove all punctuations. We decided to generate the sentences backward using a seed (i.e. a word) to achieve accurate ending rhythm. Thus, the punctuations were mostly irrelevant because they showed up mostly in the end. In addition, we also find that the model with punctuations generated sentences that sometimes had brackets that did not match or commas that did not make gramatical sense. Therefore, punctuations were removed in our final version.
 
-Furthermore, we counted the bigrams within the sonnets and replaced each pair of consecutive words that showed up frequently in the sonnets as a new token. In total, 29 pairs of words were replaced. Each pair appeared in the sonnets at least 15 times. The top five examples were ``my love'', ``thou art'', ``my self'', ``in the '', ``that i'' which appeared 41, 33, 29, 29, and 28 times respectively.
+Furthermore, we counted the bigrams within the sonnets and replaced each pair of consecutive words that showed up frequently in the sonnets as one ``word''. These word pairs were added into the list of all word tokens. In total, 29 pairs of words were added. Each pair appeared in the sonnets at least 15 times. The top five examples were ``my love'', ``thou art'', ``my self'', ``in the '', ``that i'' which appeared 41, 33, 29, 29, and 28 times respectively.
+
+Lastly, we created a rhythm dictionary that was used in poem generation later to create sentences that had the correct rhymes. For the rhythm dictionary, we collected all ending words in each line of the sonnets that rhymed. For example, ``increase'' and ``decrease'' is a pair of words that rhymed. So, they are stored as a tuple in the rhythm dictionary.
 
 
 \section*{Algorithm}
@@ -174,7 +176,7 @@ The top 10 words that associate with the hidden state are given in Table \ref{ta
 
 Figure \ref{fig:observation-matrix} shows the observation matrix in which each row is normalized to 0 and 1 for clearer color constrast. Each column represents a token and the columns are sorted by the frequency of the tokens. The top plot shows all tokens, and the bottom plot shows the first 100 tokens. From the plots, we can see that the most common words in general have a higher probability than the less common words. Words like ``and'' which are very frequently used (473 times) in the sonnets show up in a few hidden states with high probability.
 
-If we also consider the transition matrix (Figure \ref{fig:state-transition}), we can observe some interesting state transitions that makes gramatical sense. For example, hidden state 19 is most likely to transition to hidden state 17. Combinations of the top 3 words ``of'', ``in'', and ``to'' in hidden state 19 with most of the top 10 words in hidden state 17 seem to make gramatical sense.
+If we also consider the transition matrix (Figure \ref{fig:state-transition}), we can observe some interesting state transitions that makes gramatical sense. For example, hidden state 11 is most likely to transition to hidden state 19 with probability 0.9330. Combinations of the top 4 words ``of'', ``in'', ``to'', and ``not'' in hidden state 19 with most of the top 10 words in hidden state 11 (e.g. love, i, one, hath, beauty, this, and most) seem to make gramatical sense. Another example is hidden state 1 is most likely to transition to hidden state 12 with probability 0.9836. Combinations of the top words ``is'' and ``time'' in hidden state 12 with ``the'', ``my'', ``a'', ``so'', ``such'', ``their'', ``his'', and ``of the'' in hidden state 1 also make gramatical sense.
 
 
 \begin{table}[h!]
