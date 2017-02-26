@@ -26,7 +26,9 @@ The sonnets were initially tokenized by words using the NLTK's function word_tok
 
 The first change we made after running the learning algorithm was to remove all punctuations. We decided to generate the sentences backward using a seed (i.e. a word) to achieve accurate ending rhythm. Thus, the punctuations were mostly irrelevant because they showed up mostly in the end.
 
-Furthermore, we counted the bigrams within the sonnets and replaced each pair of consecutive words that showed up frequently in the sonnets as a new token. In total, 29 pairs of words were replaced. Each pair appeared in the sonnets at least 15 times. The top five examples were ``my love'', ``thou art'', ``my self'', ``in the '', ``that i'' which appeared 41, 33, 29, 29, and 28 times respectively.
+Furthermore, we counted the bigrams within the sonnets and replaced each pair of consecutive words that showed up frequently in the sonnets as one ``word''. These word pairs were added into the list of all word tokens. In total, 29 pairs of words were added. Each pair appeared in the sonnets at least 15 times. The top five examples were ``my love'', ``thou art'', ``my self'', ``in the '', ``that i'' which appeared 41, 33, 29, 29, and 28 times respectively.
+
+To create a rhythm dictionary, we collect all ending words in the sonnets that rhymed to form a rhythm dictionary. For example, ``increase'' and ``decrease'' is a pair of words that rhymed, and they are stored as a tuple in the rhythm dictionary.
 
 
 \section*{Algorithm}
