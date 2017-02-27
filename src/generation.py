@@ -31,8 +31,8 @@ def load_obj(name):
 
 # Load in observation matrix and word dictionary (int,word pairs)
 O = load_obj('./data/observation_matrix_line_20')
-word_dict_rev = load_obj('word_dictionary_reverse')
-word_dict = load_obj('word_dictionary')
+word_dict_rev = load_obj('./sonnet_preprocessing_data/word_dictionary_reverse')
+word_dict = load_obj('./sonnet_preprocessing_data/word_dictionary')
 A = load_obj('./data/transition_matrix_line_20')
 rhythm_dict = load_obj('rhythm')
 HMM = load_obj('./data/HMM_line_25')

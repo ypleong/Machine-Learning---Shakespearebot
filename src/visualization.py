@@ -27,19 +27,16 @@ def plot_matrix(A, O, word_dict, normalize=True):
     plt.colorbar(orientation='horizontal', aspect=100)
     plt.clim(vmin=0, vmax=1)
     plt.tight_layout()
-    plt.savefig("observation_graph.png")  # save as png
     plt.show()
 
     fig, ax1 = plt.subplots(1, 1)
     ax1.imshow(Onew[:, :100], aspect='auto', cmap='magma', interpolation='nearest', vmin=0.0, vmax=1.0)
     ax1.set_xticks(range(100))
     ax1.set_xticklabels(word_dict[:100], rotation=90)
-    plt.savefig("observation_graph.png")  # save as png
     plt.show()  # display
 
     plt.matshow(A, aspect='auto', cmap='magma')
     plt.colorbar()
-    plt.savefig("transition_graph.png")  # save as png
     plt.show()
 
 
@@ -116,9 +113,9 @@ def count_words(all_lines):
 # load all data
 A_list = load_obj('./data/transition_matrix_line_20')
 O_list = load_obj('./data/observation_matrix_line_20')
-symbols = load_obj('symbols')
-word_dict = load_obj('word_dictionary')
-lines = load_obj('training_data')
+symbols = load_obj('./sonnet_preprocessing_data/symbols')
+word_dict = load_obj('./sonnet_preprocessing_data/word_dictionary')
+lines = load_obj('./sonnet_preprocessing_data/training_data')
 
 A = np.array(A_list, dtype=np.float64)
 O = np.array(O_list, dtype=np.float64)

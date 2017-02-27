@@ -1,23 +1,26 @@
 from nltk.tokenize import word_tokenize
-from nltk.tag.hmm import HiddenMarkovModelTagger, HiddenMarkovModelTrainer
-from nltk.probability import (DictionaryConditionalProbDist,
-                              RandomProbDist)
-import numpy as np
-import random
-import time
 import pickle
 import operator
 import string
 
 
 def process_data(filename):
-    all_lines = []
-    all_words = {}
-    all_poems = []
+    """
+    Tokenize the sonnets
+    :param filename: file path
+    :return: a dictionary of all words, a list of all lines, and a list of all poems
+    """
+    all_lines = []  # a list of all lines
+    all_words = {}  # a dictionary of all words with wordcount
+    all_poems = []  # a list of all poems
+
+    punctuations = list(string.punctuation)  # all punctuations
+
     poem_temp = []
     with open(filename) as f:
         for line in f.readlines():
             line_tokens = [word.lower() for word in word_tokenize(line)]
+            line_tokens = [x for x in line_tokens if x not in punctuations]
 
             if len(line_tokens) > 1:
                 for word in line_tokens:
@@ -32,66 +35,19 @@ def process_data(filename):
                 poem_temp = []
 
     all_poems.append(poem_temp)
-    all_poems = all_poems[1:]
+    all_poems = all_poems[1:]  # remove [] in the first index
 
     return all_words, all_poems, all_lines
 
 
-def create_random_matrix(L, D):
-    """return a LxD matrix"""
-    A = [[random.random() for _ in range(D)] for _ in range(L)]
-
-    for i in range(len(A)):
-        norm = sum(A[i])
-        for j in range(len(A[i])):
-            A[i][j] /= norm
-
-    return np.array(A, dtype=np.float64)
-
-
-def transition_matrix(hmm):
-    trans_iter = (hmm._transitions[sj].prob(si)
-                  for sj in hmm._states
-                  for si in hmm._states)
-
-    transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
-    N = len(hmm._states)
-    return transitions_prob.reshape((N, N))
-
-
-def observation_matrix(hmm):
-    trans_iter = (hmm._outputs[sj].prob(si)
-                  for sj in hmm._states
-                  for si in hmm._symbols)
-
-    transitions_prob = np.fromiter(trans_iter, dtype=np.float64)
-    N = len(hmm._states)
-    M = len(hmm._symbols)
-    return transitions_prob.reshape((N, M))
-
-
-def find_top_words_for_states(n, O, symbols):
-    """
-    Top n words for each state.
-    Return dictionary with the state as the key
-    and a list of tuple (word, probability) as the value
-    """
-    Osize = O.shape
-
-    top_words = {}
-    for state in range(Osize[0]):
-        top_index = sorted(range(len(O[state])), key=lambda i: O[state, i], reverse=True)[:n]
-        top_words[state] = [(symbols[ind], O[state, ind]) for ind in top_index]
-
-    return top_words
-
-
-def save_obj(obj, name):
-    with open(name + '.pkl', 'wb') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-
-
 def compute_bigram_count(all_lines, all_words):
+    """
+    Count all bigrams in all_lines
+
+    :param all_lines: a list of list of word token
+    :param all_words: a dictionary of words with wordcount
+    :return: a list of bigrams with the counts
+    """
     bigram_list = {}
     for line in all_lines:
         for ind in range(len(line)-1):
@@ -109,11 +65,20 @@ def compute_bigram_count(all_lines, all_words):
 
 
 def replace_bigram(all_bigrams, all_lines, threshold=20):
+    """
+    Replace pair of word tokens with bigrams if the frequency
+    of appearance is above threshold
+
+    :param all_bigrams: a list of bigrams
+    :param all_lines: a list of list of word token
+    :param threshold: cut off for bigram's appearance frequency
+    :return: a list of list of word token and a list of all words including the bigrams
+    """
     bigrams_that_matters = [item[0] for item in all_bigrams if item[-1] >= threshold]
 
     all_words = set()
+    new_lines = []
     for line in all_lines:
-        # new_line = []
         for ind in range(len(line) - 1):
             try:
                 if (line[ind], line[ind + 1]) in bigrams_that_matters:
@@ -122,12 +87,20 @@ def replace_bigram(all_bigrams, all_lines, threshold=20):
             except IndexError:
                 pass
 
+        line = [item for item in line if item not in ["'s", "'t"]]
+        new_lines.append(line)
         all_words.update(line)
 
-    return all_lines, list(all_words)
+    return new_lines, list(all_words)
 
 
 def compute_rhythm_dictionary(all_lines):
+    """
+    Create the rhythm dictionary
+
+    :param all_lines: a list of all lines in the sonnet
+    :return: a set of tuple with pair of words that rhyme
+    """
     all_rhythm = set()
     poem = 0
     begin = 0
@@ -142,7 +115,7 @@ def compute_rhythm_dictionary(all_lines):
 
         line = [item for item in line if item not in punctuations]
 
-        if poem == 98:
+        if poem == 98:  # special sonnet
             if stanza == 0:
                 rhythm1.append(line[-1])
                 tot_line += 1
@@ -182,7 +155,7 @@ def compute_rhythm_dictionary(all_lines):
                     rhythm1 = []
                     poem += 1
 
-        elif poem == 125:
+        elif poem == 125:  # special sonnet
             rhythm1.append(line[-1])
             tot_line += 1
 
@@ -196,7 +169,7 @@ def compute_rhythm_dictionary(all_lines):
                 poem += 1
                 stanza = 0
 
-        else:
+        else:  # all other sonnets
             if stanza < 3:
                 if begin == 0:
                     rhythm1.append(line[-1])
@@ -228,6 +201,14 @@ def compute_rhythm_dictionary(all_lines):
 
 
 def convert_to_integer(all_words, all_lines):
+    """
+    Convert from words to integer
+
+    :param all_words: a list of all words
+    :param all_lines: a list of list of word token
+    :return: a list of list of word token in integer
+    and the corresponding dictionary that maps the integer to words
+    """
     dictionary = {i: word for i, word in enumerate(all_words)}
     new_lines = []
     for line in all_lines:
@@ -239,66 +220,40 @@ def convert_to_integer(all_words, all_lines):
     return new_lines, dictionary
 
 
-def convert_to_word(int_lines, dictionary):
-    new_lines = []
-    for line in int_lines:
-        new_lines.append([dictionary[ind] for ind in line])
+def save_obj(obj, name):
+    """
+    Save object
+    """
+    with open(name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
-    return new_lines
-
+#########################################################################
+#                               Main code                               #
+#########################################################################
 all_words, all_poems, all_lines = process_data('../project2data/shakespeare.txt')
 
 all_bigrams = compute_bigram_count(all_lines, all_words)
 
 all_rhythm = compute_rhythm_dictionary(all_lines)
 
-training_line, training_symbols = replace_bigram(all_bigrams, all_lines, threshold=20)
+training_line, training_symbols = replace_bigram(all_bigrams, all_lines, threshold=15)
+training_poem, training_symbols = replace_bigram(all_bigrams, all_poems, threshold=15)
 
 training_line_int, dictionary = convert_to_integer(training_symbols, training_line)
+training_poem_int, dictionary = convert_to_integer(training_symbols, training_poem)
 
-new_lines = convert_to_word(training_line_int, dictionary)
+# Reverse word dictionary where for each word, return the corresponding integer
+dictionary_2 = {v: k for k, v in dictionary.iteritems()}
 
-states = range(10)
-symbols = list(all_words)  # need to be fixed
+# Reverse the sequence
+training_line_int.reverse()
+training_poem_int.reverse()
 
-L = len(states)
-D = len(symbols)
-
-# Randomly initialize and normalize matrix A.
-# A = create_random_matrix(L, L)
-# visualize_transition_matrix_graph(A)
-
-# Randomly initialize and normalize matrix O.
-# O = create_random_matrix(L, D)
-# find_top_words_for_states(10, O, symbols)
-
-# pi = [1. / L for _ in range(L)]
-
-priors = RandomProbDist(states)
-A = DictionaryConditionalProbDist(
-                dict((state, RandomProbDist(states))
-                     for state in states))
-O = DictionaryConditionalProbDist(
-                dict((state, RandomProbDist(symbols))
-                     for state in states))
-model = HiddenMarkovModelTagger(symbols, states,
-                                A, O, priors)
-
-# model = _create_hmm_tagger(states, symbols, A, O, pi)
-
-training = []
-for line in all_poems:
-    training.append([(i, None) for i in line])
-
-trainer = HiddenMarkovModelTrainer(states, symbols)
-curr_time = time.time()
-hmm = trainer.train_unsupervised(training, model=model,
-                                 max_iterations=100)
-print time.time() - curr_time
-
-top_10_words = find_top_words_for_states(10, observation_matrix(hmm), symbols)
-save_obj(top_10_words, 'top_10_words')
-save_obj(observation_matrix(hmm), 'observation_matrix')
-save_obj(transition_matrix(hmm), 'transition_matrix')
-# plot_observation_bar(observation_matrix(hmm))
+# Save all data
+save_obj(training_line_int, './sonnet_preprocessing_data/training_data')
+save_obj(training_poem_int, './sonnet_preprocessing_data/training_poem_data')
+save_obj(dictionary, './sonnet_preprocessing_data/word_dictionary')
+save_obj(dictionary_2, './sonnet_preprocessing_data/word_dictionary_reverse')
+save_obj(training_symbols, './sonnet_preprocessing_data/symbols')
+save_obj(all_rhythm, './sonnet_preprocessing_data/rhythm')
 

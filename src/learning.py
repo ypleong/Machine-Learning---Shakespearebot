@@ -22,7 +22,7 @@ def load_obj(name):
 #########################################################################
 
 # load data
-training = load_obj('training_poem_data')
+training = load_obj('./sonnet_preprocessing_data/training_poem_data')
 
 # training
 for i in range(10, 41, 5):
