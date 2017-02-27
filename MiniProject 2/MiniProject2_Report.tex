@@ -18,7 +18,7 @@
 \begin{document}
 \pagestyle{fancy}
 
-\section*{Tokenizing}
+\section{Tokenizing}
 
 \medskip
 
@@ -31,15 +31,15 @@ Furthermore, we counted the bigrams within the sonnets and replaced each pair of
 Lastly, we created a rhythm dictionary that was used in poem generation later to create sentences that had the correct rhymes. For the rhythm dictionary, we collected all ending words in each line of the sonnets that rhymed. For example, ``increase'' and ``decrease'' is a pair of words that rhymed. So, they are stored as a tuple in the rhythm dictionary.
 
 
-\section*{Algorithm}
+\section{Algorithm}
 
 \medskip
 
-For unsupervised training of our Hidden Markov Model, we used the Baum-Welch algorithm. We used the TA solution from HW \#5 for the implementation. The main three parameters we control were (1) the number of EM iterations, (2) the number of hidden states to use, and (3) whether to train on lines of each poem or the poems themselves  . Regarding (1), we used 1000 iterations, because this was enough iterations to show convergence to a very reasonable precision. Regarding (2) and (3), we trained several different HMMs, each with a different number of hidden states (8, 10, 12, 15, 16, 20, 25, 30). For each choice of hidden states, we also trained on each line of the poem, and on each poem itself. We then visualized the HMMs through both the transition matrix and observation matrix  (discussed in section ***), and examined the generated poems (discussed in section ***) to determine the optimal number of hidden states based on a qualitative analysis of the HMM structure, and whether to train on lines or poems.
+For unsupervised training of our Hidden Markov Model, we used the Baum-Welch algorithm. We used the TA solution from HW \#5 for the implementation. The main three parameters we control were (1) the number of EM iterations, (2) the number of hidden states to use, and (3) whether to train on lines of each poem or the poems themselves  . Regarding (1), we used 1000 iterations, because this was enough iterations to show convergence to a very reasonable precision. Regarding (2) and (3), we trained several different HMMs, each with a different number of hidden states (8, 10, 12, 15, 16, 20, 25, 30). For each choice of hidden states, we also trained on each line of the poem, and on each poem itself. We then visualized the HMMs through both the transition matrix and observation matrix  (discussed in section 5), and examined the generated poems to determine the optimal number of hidden states based on a qualitative analysis of the HMM structure, and whether to train on lines or poems.
 
 ~
 
-We eventually chose an HMM with 20 hidden states trained on the individual lines of the poem, based on the underlying structure of the HMM and the qualitative quality of the generated poems. When we assess the underlying structure of the HMM, we refer to meaningful patterns in the transition matrix and observation matrix (also whether states generate words with discernable patterns).
+We eventually chose an HMM with 20 hidden states trained on the individual lines of the poem, based on the underlying structure of the HMM and the qualitative quality of the generated poems. When we assess the underlying structure of the HMM, we refer to meaningful patterns in the transition matrix and observation matrix (also whether states generate words with discernible patterns). This underlying structure is discussed in section 5. When using fewer or more states, this structure was less clear, resulting in our decision to use 20 hidden states. 
 
 ~
 
@@ -48,7 +48,7 @@ When generating our poem, we also needed to keep track of both syllable count. T
 
 \medskip
 
-\section*{Poem Generation}
+\section{Poem Generation}
 
 \subsection*{First Bare-Bones Implementation}
 
@@ -75,9 +75,9 @@ For our initial bare-bones implementation, we originally generated poems by the 
 \end{enumerate}
 ~
 
-By following the steps above, we were able to generate 14-line poems with each line containing \textit{at least} 10 syllables. 
+To get the syllable count in step 5, we used the NLTK CMU dictionary to keep syllable counts. By following the steps above, we were able to generate 14-line poems with each line containing \textit{at least} 10 syllables. 
 
-\section*{Poem Generation/Additional Goals}
+\section{Poem Generation/Additional Goals}
 
 However, we wanted to generate poems with \textit{exactly} 10 syllables. To do this we modified step 6 to get the following algorithm:
 
@@ -157,13 +157,15 @@ Finally, we want to implement rhyme. To do this, we had to generate our poems ba
 
 Using this algorithm, we were able to successfully automatically generate poems using an HMM trained on several shakespeare poems that obeyed the syllable count and rhyming pattern of a shakespearean sonnet. However, by implementing rhyme in the above fashion, we had to restrict the choice of first word in every line to one from our rhyming dictionary. Thus the structure of our generation algorithm using HMM was different. In our first step, rather than transitioning to an initial state (based on A) and generating a word (based on O), we had to first choose the word, and then sample the most likely state.
 
-Generating the poems backward in this fashion had the effect:
+Generating the poems in this fashion, enforcing both rhyming scheme and syllable count, had the effect:
 
 \begin{enumerate}
 
-\item Because we were considering transitions backward (to the previous word in the line), the state transition matrix became less intuitive to follow since reading sentences backwards is less natural to humans and may show different structure.
+\item Since we chose to cut off the line at 10 syllables as we did, the last word of the line was often restricted in its number of syllables (i.e. if we had 8 syllables in our line already, we had to pick a last word with less than 3 syllables). Thus the last word was picked from a probability distribution that did not exactly match that given by the bare-bones HMM, in order to ensure each line had 10 syllables.
 
-\item Sometimes the first word of each line (the last generated word of the line since we generated backwards) often did not fit as a first word. 
+\item Because we were considering transitions backward (to the previous word in the line), the state transition matrix became less intuitive to follow since reading sentences backwards results in different transition structure and is less natural to humans.
+
+\item Sometimes the first word of each line did not fit as a first word, since it was the last word generated in our backwards generation scheme.
 
 \item Our first word of each line was limited to our rhyming dictionary. Furthermore, we had to calculate $P(y \mid x)$ in order to get the first state from the first word, 
 
@@ -194,29 +196,15 @@ Than to that i west slow and sounds a reap \verseline
 All friend great poor tear that all that i leap \end{stanza}
 \end{poem}
 
-
-The poems we generated had some structure and some grammatically sensical lines. However, it suffered from a few shortcomings discussed below.
-
-\begin{enumerate}
-
-\item By nature of generation with HMMs, words can only have direct relation with the previous word. Therefore it becomes likely for sentences to wander, and difficult to string together more than a few words for a single coherent idea. Thus, in our poems, seldom are there long strings of words forming a single coherent idea. 
-
-\item Because we trained our HMM on individual lines, the generated poems had no theme (beyond the coincidental). Thus each line often showed little thematic correlation to adjacent lines.
-
-\item Some words or pairs of words were extremely frequent in the poems, and the prominence of common words like 'the', 'be', and 'he' often threw off the structure of sentences. Interestingly, the word 'love' shows up in Shakespeare's poems frequently, so this word also showed up in our poems very frequently.
-
-\end{enumerate}
-
-
 \medskip
 
-\section*{Visualization and Interpretation}
+\section{Visualization and Interpretation}
 
 The top 10 words that associate with the hidden state are given in Table \ref{tab:top-10-words} (the numbers below the words denote the probability). The number in bracket is the total number of top words to form approximately 0.5 probability. Hidden state 11 and 12 have probabilities that are more diffused and they includes more words that are nouns, adverbs or adjectives. Hidden state 1, 8, 9, and 18 have a more concentrated probabilities, and they tend to be words that are used to connect phrases like particles, conjunctions, and pronouns. Hidden state 10 includes the 5 ``wh'' words for questions. 
 
-Figure \ref{fig:observation-matrix} shows the observation matrix in which each row is normalized to 0 and 1 for clearer color constrast. Each column represents a token and the columns are sorted by the frequency of the tokens. The top plot shows all tokens, and the bottom plot shows the first 100 tokens. From the plots, we can see that the most common words in general have a higher probability than the less common words. Words like ``and'' which are very frequently used (473 times) in the sonnets show up in a few hidden states with high probability.
+Figure \ref{fig:observation-matrix} shows the observation matrix in which each row is normalized to 0 and 1 for clearer color contrast. Each column represents a token and the columns are sorted by the frequency of the tokens. The top plot shows all tokens, and the bottom plot shows the first 100 tokens. From the plots, we can see that the most common words in general have a higher probability than the less common words. Words like ``and'' which are very frequently used (473 times) in the sonnets show up in a few hidden states with high probability.
 
-If we also consider the transition matrix (Figure \ref{fig:state-transition}), we can observe some interesting state transitions that makes gramatical sense. For example, hidden state 11 is most likely to transition to hidden state 19 with probability 0.9330. Combinations of the top 4 words ``of'', ``in'', ``to'', and ``not'' in hidden state 19 with most of the top 10 words in hidden state 11 (e.g. love, i, one, hath, beauty, this, and most) seem to make gramatical sense. Another example is hidden state 1 is most likely to transition to hidden state 12 with probability 0.9836. Combinations of the top words ``is'' and ``time'' in hidden state 12 with ``the'', ``my'', ``a'', ``so'', ``such'', ``their'', ``his'', and ``of the'' in hidden state 1 also make gramatical sense.
+If we also consider the transition matrix (Figure \ref{fig:state-transition}), we can observe some interesting state transitions that makes grammatical sense. For example, hidden state 11 is most likely to transition to hidden state 19 with probability 0.9330. Combinations of the top 4 words ``of'', ``in'', ``to'', and ``not'' in hidden state 19 with most of the top 10 words in hidden state 11 (e.g. love, i, one, hath, beauty, this, and most) seem to make grammatical sense. Another example is hidden state 1 is most likely to transition to hidden state 12 with probability 0.9836. Combinations of the top words ``is'' and ``time'' in hidden state 12 with ``the'', ``my'', ``a'', ``so'', ``such'', ``their'', ``his'', and ``of the'' in hidden state 1 also make grammatical sense.
 
 
 \begin{table}[h!]
@@ -281,6 +269,18 @@ If we also consider the transition matrix (Figure \ref{fig:state-transition}), w
 	\caption{State transition matrix}\label{fig:state-transition}
 \end{figure}
 
+\section{Conclusion}
 
+The poems we generated had some structure and some grammatically sensical lines. However, it suffered from a few shortcomings discussed below.
+
+\begin{enumerate}
+
+\item By nature of generation with HMMs, words can only have direct relation with the previous word. Therefore it becomes likely for sentences to wander, and difficult to string together more than a few words for a single coherent idea. Thus, in our poems, seldom are there long strings of words forming a single coherent idea. 
+
+\item Because we trained our HMM on individual lines, the generated poems had no theme (beyond the coincidental). Thus each line often showed little thematic correlation to adjacent lines.
+
+\item Some words or pairs of words were extremely frequent in the poems, and the prominence of common words like 'the', 'be', and 'he' often threw off the structure of sentences. Interestingly, the word 'love' shows up in Shakespeare's poems frequently, so this word also showed up in our poems very frequently.
+
+\end{enumerate}
 
 \end{document}
