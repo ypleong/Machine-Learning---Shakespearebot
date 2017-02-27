@@ -2,6 +2,8 @@
 \showsolutionsfalse
 \input{preamble}
 
+\renewcommand{\headrulewidth}{0.4pt}
+
 \chead{%
   {\vbox{%
       \vspace{2mm}
@@ -9,8 +11,8 @@
       Machine Learning \& Data Mining \hfill
       Caltech CS/CNS/EE 155 \hfill \\[1pt]
       Miniproject 2\hfill
-      February 27th, 2017 \\
-      Richard Cheng, Yoke Peng \hfill
+      February $26^{th}$, 2017 \\
+      Richard Cheng, Yoke Peng
     }
   }
 }
@@ -54,8 +56,6 @@ When generating our poem, we also needed to keep track of both syllable count. T
 
 For our initial bare-bones implementation, we originally generated poems by the following steps:
 
-~
-
 \begin{enumerate}
 
 \item Pick a uniformly random states to begin at
@@ -73,13 +73,10 @@ For our initial bare-bones implementation, we originally generated poems by the 
 \item Repeat steps 1-6 until we have generated 14 lines for our poem.
 
 \end{enumerate}
-~
 
 To get the syllable count in step 5, we used the NLTK CMU dictionary to keep syllable counts. By following the steps above, we were able to generate 14-line poems with each line containing \textit{at least} 10 syllables. 
 
 \section{Poem Generation/Additional Goals}
-
-However, we wanted to generate poems with \textit{exactly} 10 syllables. To do this we modified step 6 to get the following algorithm:
 
 \subsection*{Implementation with Syllable Counts (No Rhyme)}
 
@@ -112,7 +109,7 @@ However, we wanted to generate poems with \textit{exactly} 10 syllables. To do t
 \end{enumerate}
 ~
 
-This gave poems with exactly 10 syllables. The tradeoff here was that the last word of the line was often restricted in its number of syllables (i.e. if we had 8 syllables in our line already, we had to pick a last word with less than 3 syllables). Thus the last word was picked from a probability distribution that did not exactly match that given by the bare-bones HMM.
+This gave poems with exactly 10 syllables. The tradeoff in enforcing this constraint is discussed in the subsection ``Generation Result/Discussion''.
 
 \subsection*{Implementation with Syllable Count and Rhyme}
 
@@ -151,6 +148,7 @@ Finally, we want to implement rhyme. To do this, we had to generate our poems ba
 \item Repeat steps 2-10 until we have generated 14 lines.
 
 \end{enumerate}
+
 ~
 
 \subsection*{Generation Result/Discussion}
@@ -196,8 +194,6 @@ Than to that i west slow and sounds a reap \verseline
 All friend great poor tear that all that i leap \end{stanza}
 \end{poem}
 
-\medskip
-
 \section{Visualization and Interpretation}
 
 The top 10 words that associate with the hidden state are given in Table \ref{tab:top-10-words} (the numbers below the words denote the probability). The number in bracket is the total number of top words to form approximately 0.5 probability. Hidden state 11 and 12 have probabilities that are more diffused and they includes more words that are nouns, adverbs or adjectives. Hidden state 1, 8, 9, and 18 have a more concentrated probabilities, and they tend to be words that are used to connect phrases like particles, conjunctions, and pronouns. Hidden state 10 includes the 5 ``wh'' words for questions. 
@@ -207,7 +203,7 @@ Figure \ref{fig:observation-matrix} shows the observation matrix in which each r
 If we also consider the transition matrix (Figure \ref{fig:state-transition}), we can observe some interesting state transitions that makes grammatical sense. For example, hidden state 11 is most likely to transition to hidden state 19 with probability 0.9330. Combinations of the top 4 words ``of'', ``in'', ``to'', and ``not'' in hidden state 19 with most of the top 10 words in hidden state 11 (e.g. love, i, one, hath, beauty, this, and most) seem to make grammatical sense. Another example is hidden state 1 is most likely to transition to hidden state 12 with probability 0.9836. Combinations of the top words ``is'' and ``time'' in hidden state 12 with ``the'', ``my'', ``a'', ``so'', ``such'', ``their'', ``his'', and ``of the'' in hidden state 1 also make grammatical sense.
 
 
-\begin{table}[h!]
+\begin{table}[H]
 	\centering
 	\caption{Top 10 words for hidden states and the probability. The number in bracket is the total number of top words to form approximately 0.5 probability.}\label{tab:top-10-words}
 	\begin{tabular}{c||l|l|l|l|l|l|l|l|l|l}
@@ -256,14 +252,14 @@ If we also consider the transition matrix (Figure \ref{fig:state-transition}), w
 	\end{tabular}
 \end{table}
 
-\begin{figure}[h!]
+\begin{figure}[H]
 	\centering
 	\subfloat{\includegraphics[width=\textwidth, clip=true, trim=0cm 2cm 0cm 0cm]{observation_matrix_normalized}} \\
 	\subfloat{\includegraphics[width=\textwidth, clip=true, trim=0.5cm 0cm 1cm 0cm]{observation_matrix_normalized_zoom}} 
 	\caption{Normalized observation matrix. The top plot shows all tokens, and the bottom plot zooms into the first 100 tokens.}\label{fig:observation-matrix}
 \end{figure}
 
-\begin{figure}[h!]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.65\textwidth, clip=true, trim=1cm 1cm 1cm 1cm]{transition_matrix}
 	\caption{State transition matrix}\label{fig:state-transition}
