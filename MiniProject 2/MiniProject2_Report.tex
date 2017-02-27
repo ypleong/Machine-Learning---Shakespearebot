@@ -43,11 +43,6 @@ For unsupervised training of our Hidden Markov Model, we used the Baum-Welch alg
 
 We eventually chose an HMM with 20 hidden states trained on the individual lines of the poem, based on the underlying structure of the HMM and the qualitative quality of the generated poems. When we assess the underlying structure of the HMM, we refer to meaningful patterns in the transition matrix and observation matrix (also whether states generate words with discernible patterns). This underlying structure is discussed in section 5. When using fewer or more states, this structure was less clear, resulting in our decision to use 20 hidden states. 
 
-~
-
-When generating our poem, we also needed to keep track of both syllable count. To do this, we used the NLTK CMU dictionary to keep syllable counts.
-
-
 \medskip
 
 \section{Poem Generation}
@@ -267,16 +262,22 @@ If we also consider the transition matrix (Figure \ref{fig:state-transition}), w
 
 \section{Conclusion}
 
-The poems we generated had some structure and some grammatically sensical lines. However, it suffered from a few shortcomings discussed below.
+We were able to successfully generate poems with a shakespearean style with mostly grammatically sensical lines. However, our poems suffered from quite a few shortcomings. Some of these shortcomings, associated with enforcement of rhyming scheme and proper syllable count, were discussed in the ``Poetry Generation/Additional Goals'' Section. Others pitfalls and potential remedies are mentioned below:
 
 \begin{enumerate}
 
-\item By nature of generation with HMMs, words can only have direct relation with the previous word. Therefore it becomes likely for sentences to wander, and difficult to string together more than a few words for a single coherent idea. Thus, in our poems, seldom are there long strings of words forming a single coherent idea. 
+\item By nature of generation with HMMs, words can only have direct relation with the previous word. Therefore it becomes likely for sentences to wander, and difficult to string together long sequences of words to form a single coherent idea. Thus, in our poems, seldom are there long strings of words forming a single coherent idea. 
 
-\item Because we trained our HMM on individual lines, the generated poems had no theme (beyond the coincidental). Thus each line often showed little thematic correlation to adjacent lines.
+\item Because we trained our HMM on individual lines, the generated poems had no theme (beyond the coincidental). Thus each line often showed little thematic correlation to adjacent lines. We tried remedying this by training on poems rather than lines, but this resulted in individuals lines with less grammatical structure that often made little sense. With more data though, training on poems rather than individual lines may have been able to produce poems with more of a theme, while maintaining reasonably good grammar.
 
-\item Some words or pairs of words were extremely frequent in the poems, and the prominence of common words like 'the', 'be', and 'he' often threw off the structure of sentences. Interestingly, the word 'love' shows up in Shakespeare's poems frequently, so this word also showed up in our poems very frequently.
+\item Some words or pairs of words were extremely frequent in the poems, and the prominence of common words like 'the', 'be', and 'he' often threw off the structure of sentences, resulting in sentences with nonsensical part-of-speech sequences (e.g. pronoun-adverb-pronoun-etc...). To remedy this, we could try training our model on word's and the part-of-speech tag, in order to increase our likelihood of generating lines with proper part-of-speech sequences (e.g. Pronoun-noun-verb-noun). Google's Speech API is able to label part-of-speech tags for a given line, which would enable this kind of training.
 
 \end{enumerate}
+
+Despite these shortcomings in our HMM for poem generation, we were quite happy with our result, and our success in generating poems with proper rhyme scheme and syllable count, with reasonable grammatical structure. Furthermore, by visualizing our trained HMM, we were able to identify interesting key features of Shakespearean poems, such as prominent word transitions or bigrams (e.g. Shakespeare really enjoys using ``my love'').
+
+~
+
+We split up the work...
 
 \end{document}

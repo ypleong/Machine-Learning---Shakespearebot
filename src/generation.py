@@ -35,7 +35,7 @@ word_dict_rev = load_obj('./sonnet_preprocessing_data/word_dictionary_reverse')
 word_dict = load_obj('./sonnet_preprocessing_data/word_dictionary')
 A = load_obj('./data/transition_matrix_line_20')
 rhythm_dict = load_obj('rhythm')
-HMM = load_obj('./data/HMM_line_25')
+HMM = load_obj('./data/HMM_line_20')
 
 L = len(O)
 D = len(O[0])
@@ -98,7 +98,7 @@ for l in range(14):
     betas = HMM.backward([first_index], normalize=True)
     for curr in range(L):
         P_yx[curr] = alphas[1][curr]*betas[0][curr]
-    
+
     norm = sum(P_yx)
     for curr in range(len(P_yx)):
         P_yx[curr] /= norm
