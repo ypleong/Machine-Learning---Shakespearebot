@@ -12,13 +12,24 @@
       Caltech CS/CNS/EE 155 \hfill \\[1pt]
       Miniproject 2\hfill
       February $26^{th}$, 2017 \\
-      Richard Cheng, Yoke Peng
     }
   }
 }
 
 \begin{document}
 \pagestyle{fancy}
+
+\section{Introduction}
+\medskip
+\begin{itemize}
+
+    \item \textbf{Group members} \\
+    Richard Cheng, Yoke Peng Leong
+    
+    \item \textbf{Code/Data/Github Repository} \\
+    https://github.com/ypleong/Machine-Learning---Shakespearebot.git
+
+\end{itemize}
 
 \section{Tokenizing}
 
@@ -37,11 +48,11 @@ Lastly, we created a rhythm dictionary that was used in poem generation later to
 
 \medskip
 
-For unsupervised training of our Hidden Markov Model, we used the Baum-Welch algorithm. We used the TA solution from HW \#5 for the implementation. The main three parameters we control were (1) the number of EM iterations, (2) the number of hidden states to use, and (3) whether to train on lines of each poem or the poems themselves  . Regarding (1), we used 1000 iterations, because this was enough iterations to show convergence to a very reasonable precision. Regarding (2) and (3), we trained several different HMMs, each with a different number of hidden states (8, 10, 12, 15, 16, 20, 25, 30). For each choice of hidden states, we also trained on each line of the poem, and on each poem itself. We then visualized the HMMs through both the transition matrix and observation matrix  (discussed in section 5), and examined the generated poems to determine the optimal number of hidden states based on a qualitative analysis of the HMM structure, and whether to train on lines or poems.
+For unsupervised training of our Hidden Markov Model, we used the Baum-Welch algorithm. We used the TA solution from HW \#5 for the implementation. The main three parameters we control were (1) the number of EM iterations, (2) the number of hidden states to use, and (3) whether to train on lines of each poem or the poems themselves  . Regarding (1), we used 1000 iterations, because this was enough iterations to show convergence to a very reasonable precision. Regarding (2) and (3), we trained several different HMMs, each with a different number of hidden states (8, 10, 12, 15, 16, 20, 25, 30). For each choice of hidden states, we also trained on each line of the poem, and on each poem itself. We then visualized the HMMs through both the transition matrix and observation matrix  (discussed in section 6), and examined the generated poems to determine the optimal number of hidden states based on a qualitative analysis of the HMM structure, and whether to train on lines or poems.
 
 ~
 
-We eventually chose an HMM with 20 hidden states trained on the individual lines of the poem, based on the underlying structure of the HMM and the qualitative quality of the generated poems. When we assess the underlying structure of the HMM, we refer to meaningful patterns in the transition matrix and observation matrix (also whether states generate words with discernible patterns). This underlying structure is discussed in section 5. When using fewer or more states, this structure was less clear, resulting in our decision to use 20 hidden states. 
+We eventually chose an HMM with 20 hidden states trained on the individual lines of the poem, based on the underlying structure of the HMM and the qualitative quality of the generated poems. When we assess the underlying structure of the HMM, we refer to meaningful patterns in the transition matrix and observation matrix (also whether states generate words with discernible patterns). This underlying structure is discussed in section 6. When using fewer or more states, this structure was less clear, resulting in our decision to use 20 hidden states. 
 
 \medskip
 
@@ -268,9 +279,9 @@ We were able to successfully generate poems with a shakespearean style with most
 
 \item By nature of generation with HMMs, words can only have direct relation with the previous word. Therefore it becomes likely for sentences to wander, and difficult to string together long sequences of words to form a single coherent idea. Thus, in our poems, seldom are there long strings of words forming a single coherent idea. 
 
-\item Because we trained our HMM on individual lines, the generated poems had no theme (beyond the coincidental). Thus each line often showed little thematic correlation to adjacent lines. We tried remedying this by training on poems rather than lines, but this resulted in individuals lines with less grammatical structure that often made little sense. With more data though, training on poems rather than individual lines may have been able to produce poems with more of a theme, while maintaining reasonably good grammar.
+\item Because we trained our HMM on individual lines, the generated poems had no theme (beyond the coincidental). Thus each line often showed little thematic correlation to adjacent lines. We tried remedying this by training on poems rather than lines, but this resulted in individuals lines with less grammatical structure that often made little sense. With more data though, training on poems (or even stanzas) rather than individual lines may have been able to produce poems with more of a theme, while maintaining reasonably good grammar.
 
-\item Some words or pairs of words were extremely frequent in the poems, and the prominence of common words like 'the', 'be', and 'he' often threw off the structure of sentences, resulting in sentences with nonsensical part-of-speech sequences (e.g. pronoun-adverb-pronoun-etc...). To remedy this, we could try training our model on word's and the part-of-speech tag, in order to increase our likelihood of generating lines with proper part-of-speech sequences (e.g. Pronoun-noun-verb-noun). Google's Speech API is able to label part-of-speech tags for a given line, which would enable this kind of training.
+\item Some words or pairs of words were extremely frequent in the poems, and the prominence of common words like ``and'', ``the'' or ``be'' often threw off the structure of sentences. This often exacerbated the issue that sentences generated often exhibited nonsensical part-of-speech sequences (e.g. pronoun-adverb-pronoun-etc...). To remedy this, we could try training our model on word's and part-of-speech tags, in order to increase our likelihood of generating lines with proper part-of-speech sequences (e.g. Pronoun-noun-verb-noun). Google's Speech API is able to label part-of-speech tags for a given line, which would enable this kind of training.
 
 \end{enumerate}
 
@@ -278,6 +289,6 @@ Despite these shortcomings in our HMM for poem generation, we were quite happy w
 
 ~
 
-We split up the work...
+We worked and discussed all ideas together. Yoke Peng took care of most of the preprocessing and data visualization, and Richard took care of most of the HMM training and poem generation. We both worked on the report together.
 
 \end{document}
