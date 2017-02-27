@@ -1,38 +1,35 @@
-import numpy as np
 import random
 import pickle
 from nltk.corpus import cmudict
 import string
 from countsyl import count_syllables
 
-phoneme_dict = dict(cmudict.entries())
 
-
-def syllables_in_word(word):
-    #Attempts to count the number of syllables in the string argument 'word'.
-    if phoneme_dict.has_key(word):
-        return len( [ph for ph in phoneme_dict[word] if ph.strip(string.letters)] )  
+def syllables_in_word(word, phoneme_dict):
+    """
+    Count the number of syllables in the string argument 'word'
+    :param word: string
+    :return: number of syllables
+    """
+    if word in phoneme_dict:
+        return len([ph for ph in phoneme_dict[word] if ph.strip(string.letters)])
     else:
         return 0
 
 
-def normalize_column_matrix(M, D, L):
-    """return a LxD matrix"""
-    for i in range(D):
-        column_sum = 0.0
-        for j in range(L):
-            column_sum += M[j][i]
-        for j in range(L):
-            M[j][i] = M[j][i]/column_sum
-            
-    return np.array(M, dtype=np.float64)
-
-
 def load_obj(name):
+    """
+    Load data
+    """
     with open(name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
-#Load in observation matrix and word dictionary (int,word pairs)
+
+#########################################################################
+#                               Main code                               #
+#########################################################################
+
+# Load in observation matrix and word dictionary (int,word pairs)
 O = load_obj('./data/observation_matrix_line_20')
 word_dict_rev = load_obj('word_dictionary_reverse')
 word_dict = load_obj('word_dictionary')
@@ -42,6 +39,8 @@ HMM = load_obj('./data/HMM_line_25')
 
 L = len(O)
 D = len(O[0])
+
+phoneme_dict = dict(cmudict.entries())
 
 rhyme_pair = [0. for _ in range(7)]
 rand_selector = [0. for _ in range(7)]
@@ -120,8 +119,9 @@ for l in range(14):
     i = 0
     syllable_count = count_syllables(first_word)
     if syllable_count == 0:
-        syllable_count = syllables_in_word(first_word)
-    rand_sequence=[first_word]
+        syllable_count = syllables_in_word(first_word, phoneme_dict)
+    rand_sequence = [first_word]
+
     while syllable_count < 10:
         # Update each state based on previous state
         P_A = A[state[i]]
@@ -130,6 +130,7 @@ for l in range(14):
             if r_A < sum(P_A[0:k+1]):
                 state.append(k)
                 break
+
         # Determine current emission based on current state
         P_O = O[state[i]]
         r_O = random.uniform(0,1)
@@ -143,16 +144,19 @@ for l in range(14):
                 
                     curr_syllable = count_syllables(new_word)
                     if curr_syllable == 0:
-                        curr_syllable = syllables_in_word(new_word)
+                        curr_syllable = syllables_in_word(new_word, phoneme_dict)
                     syllable_count += curr_syllable
                 
                     if syllable_count > 10:
                         state.pop()
-                        syllable_count -= count_syllables(new_word)
+                        syllable_count -= curr_syllable
                         break
                     else:
                         rand_sequence.append(new_word)
                         prev_k = k
                         break
+
     rand_sequence.reverse()
+
+    # print the sentence
     print(' '.join(rand_sequence))

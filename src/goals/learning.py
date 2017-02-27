@@ -1,30 +1,38 @@
-from nltk.tokenize import word_tokenize
-from nltk.tag.hmm import HiddenMarkovModelTagger, HiddenMarkovModelTrainer
-from nltk.probability import (DictionaryConditionalProbDist,
-                              RandomProbDist)
-import numpy as np
 from HMM import unsupervised_HMM
-import random
-import time
 import pickle
 
+
 def save_obj(obj, name):
+    """
+    Save data
+    """
     with open(name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
+
 def load_obj(name):
+    """
+    Load data
+    """
     with open(name + '.pkl', 'rb') as f:
         return pickle.load(f)
                 
-        
-training = load_obj('training_data')
-word_dict = load_obj('word_dictionary')
-curr_time = time.time()
-HMM = unsupervised_HMM(training, 15,10)
-A = HMM.A
-O = HMM.O
+#########################################################################
+#                               Main code                               #
+#########################################################################
 
-save_obj(A, 'transition_matrix')
-save_obj(O, 'observation_matrix')
+# load data
+training = load_obj('training_poem_data')
+
+# training
+for i in range(10, 41, 5):
+    print 'i ='+str(i)
+    HMM = unsupervised_HMM(training, i, 500)
+    A = HMM.A
+    O = HMM.O
+
+    save_obj(A, './data/transition_matrix_line_'+str(i))
+    save_obj(O, './data/observation_matrix_line_'+str(i))
+    save_obj(HMM, './data/hmm_line_'+str(i))
 
 
